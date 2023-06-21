@@ -3,10 +3,12 @@ import { BadRequestException, Injectable } from '@nestjs/common'
 import { hash } from 'argon2'
 import { PrismaService } from 'src/prisma.service'
 import { AuthDto } from './auth.dto'
+import { JwtService } from '@nestjs/jwt'
+import { User } from '@prisma/client'
 
 @Injectable()
 export class AuthService {
-	constructor(private prisma: PrismaService) {}
+	constructor(private prisma: PrismaService, private jwt: JwtService) {}
 
 	async register(dto: AuthDto) {
 		const oldUser = await this.prisma.user.findUnique({
@@ -23,10 +25,26 @@ export class AuthService {
 				password: await hash(dto.password)
 			}
 		})
-		return user
+
+		const tokens = await this.issueToken(user.id)
+
+		return {
+			user: this.returnUserField(user),
+			...tokens
+		}
 	}
 	private async issueToken(userId: number) {
 		const data = { id: userId }
-		// const accessToken = this.jwtService.sign
+		const accessToken = this.jwt.sign(data, {
+			expiresIn: '1h'
+		})
+		const refreshToken = this.jwt.sign(data, {
+			expiresIn: '7d'
+		})
+		return { accessToken, refreshToken }
+	}
+
+	private returnUserField(user: User) {
+		return { id: user.id, email: user.email }
 	}
 }
