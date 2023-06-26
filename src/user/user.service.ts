@@ -55,6 +55,7 @@ export class UserService {
 			}
 		})
 	}
+
 	async toggleFavorite(userId: number, productId: number) {
 		const user = await this.byId(userId)
 
@@ -66,7 +67,7 @@ export class UserService {
 			where: { id: user.id },
 			data: {
 				favorites: {
-					[isExist ? 'disconect' : 'connect']: {
+					[isExist ? 'disconnect' : 'connect']: {
 						id: productId
 					}
 				}
