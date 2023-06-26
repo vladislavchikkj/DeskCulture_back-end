@@ -3,8 +3,15 @@ import { PrismaClient } from '@prisma/client'
 
 @Injectable()
 export class PrismaService extends PrismaClient implements OnModuleInit {
-	findUnique(arg0: { where: { id: number } }) {
-		throw new Error('Method not implemented.')
+	// findUnique(arg0: { where: { id: number } }) {
+	// 	throw new Error('Method not implemented.')
+	// }
+	findUnique(args: {
+		where: {
+			id: number
+		}
+	}) {
+		return this.user.findUnique(args)
 	}
 	async onModuleInit() {
 		await this.$connect()
