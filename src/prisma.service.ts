@@ -3,6 +3,7 @@ import { PrismaClient } from '@prisma/client'
 
 @Injectable()
 export class PrismaService extends PrismaClient implements OnModuleInit {
+	[x: string]: any
 	// findUnique(arg0: { where: { id: number } }) {
 	// 	throw new Error('Method not implemented.')
 	// }
