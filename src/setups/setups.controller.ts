@@ -14,7 +14,7 @@ import { Auth } from 'src/auth/decorator/auth.decorator'
 import { SetupsDto } from './setups.dto'
 import { SetupsService } from './setups.service'
 
-@Controller('categories')
+@Controller('setups')
 export class SetupsController {
 	constructor(private readonly setupsService: SetupsService) {}
 
