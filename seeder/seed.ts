@@ -16,6 +16,7 @@ const createProducts = async (quantity: number) => {
 		// Генерируем случайное имя категории и формируем ее slug
 		const categoryName = faker.commerce.department()
 		const categorySlug = faker.helpers.slugify(categoryName).toLocaleLowerCase()
+		const categoriesImage = faker.image.imageUrl(200, 200, 'cat') // Замените 'abstract' на нужную категорию
 
 		// Генерируем случайное имя настройки и формируем ее изображение
 		const setupName = faker.commerce.department()
@@ -47,7 +48,9 @@ const createProducts = async (quantity: number) => {
 				category: {
 					create: {
 						name: categoryName,
-						slug: categorySlug
+						slug: categorySlug,
+						image: categoriesImage,
+						description: faker.lorem.paragraph()
 					}
 				},
 

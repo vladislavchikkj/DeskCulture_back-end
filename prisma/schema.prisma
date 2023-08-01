@@ -50,9 +50,11 @@ model Category {
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
-  name     String
-  slug     String    @unique
-  products Product[]
+  name        String
+  slug        String    @unique
+  description String
+  image       String
+  products    Product[]
 }
 
 model Setups {

@@ -38,7 +38,9 @@ export class CategoryService {
 		return this.prisma.category.create({
 			data: {
 				name: '',
-				slug: ''
+				slug: '',
+				image: '',
+				description: ''
 			}
 		})
 	}
