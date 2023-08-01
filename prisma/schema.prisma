@@ -60,8 +60,10 @@ model Setups {
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
-  name     String
-  products Product[]
+  name        String
+  description String
+  image       String
+  products    Product[]
 }
 
 model Review {

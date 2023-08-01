@@ -26,7 +26,9 @@ export class SetupsService {
 	async create() {
 		return this.prisma.setups.create({
 			data: {
-				name: ''
+				name: '',
+				description: '',
+				image: ''
 			}
 		})
 	}

@@ -9,32 +9,49 @@ const createProducts = async (quantity: number) => {
 	const products = []
 
 	for (let i = 0; i < quantity; i++) {
+		// Генерируем случайное имя продукта и формируем его slug
 		const productName = faker.commerce.productName()
 		const productSlug = faker.helpers.slugify(productName).toLocaleLowerCase()
+
+		// Генерируем случайное имя категории и формируем ее slug
 		const categoryName = faker.commerce.department()
 		const categorySlug = faker.helpers.slugify(categoryName).toLocaleLowerCase()
-		const setupName = faker.commerce.department()
 
+		// Генерируем случайное имя настройки и формируем ее изображение
+		const setupName = faker.commerce.department()
+		const setupImage = faker.image.imageUrl(200, 200, 'abstract') // Замените 'abstract' на нужную категорию
+
+		// Создаем продукт с помощью Prisma
 		const product = await prisma.product.create({
 			data: {
 				name: productName,
 				slug: productSlug,
 				description: faker.commerce.productDescription(),
 				price: +faker.commerce.price({ min: 10, max: 999 }),
+
+				// Добавляем настройку к продукту, включая имя, изображение и описание
 				setups: {
 					create: {
-						name: setupName
+						name: setupName,
+						image: setupImage,
+						description: faker.lorem.paragraph()
 					}
 				},
+
+				// Генерируем случайные изображения продукта
 				images: Array.from({
 					length: faker.number.int({ min: 2, max: 6 })
 				}).map(() => faker.image.urlLoremFlickr()),
+
+				// Добавляем категорию продукта с помощью Prisma
 				category: {
 					create: {
 						name: categoryName,
 						slug: categorySlug
 					}
 				},
+
+				// Создаем два отзыва для продукта с помощью Prisma
 				reviews: {
 					create: [
 						{
