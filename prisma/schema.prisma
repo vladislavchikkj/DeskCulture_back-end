@@ -31,7 +31,7 @@ model Product {
   updatedAt DateTime @updatedAt @map("updated_at")
 
   name        String
-  slug        String      @unique
+  slug        String
   description String
   price       Int
   images      String[]
