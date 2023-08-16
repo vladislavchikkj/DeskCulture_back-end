@@ -46,6 +46,10 @@ export class ProductController {
 	async getProductByCategory(@Param('categorySlug') categorySlug: string) {
 		return this.productService.byCategory(categorySlug)
 	}
+	@Get('by-setups/:id')
+	async getProductbySetupsId(@Param('id') id: number) {
+		return this.productService.bySetupsId(+id)
+	}
 
 	@UsePipes(new ValidationPipe())
 	@HttpCode(200)

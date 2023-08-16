@@ -130,6 +130,18 @@ export class ProductService {
 
 		return products
 	}
+	async bySetupsId(setupsId: number) {
+		const products = await this.prisma.product.findMany({
+			where: { setupsId },
+			select: productReturnObjectFullest
+		})
+
+		if (!products || products.length === 0) {
+			throw new NotFoundException('No products with the given setupsId')
+		}
+
+		return products
+	}
 
 	async bySimilar(id: number) {
 		const currentProduct = await this.byId(id)

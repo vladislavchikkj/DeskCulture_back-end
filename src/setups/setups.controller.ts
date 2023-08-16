@@ -23,7 +23,6 @@ export class SetupsController {
 		return this.setupsService.getAll()
 	}
 	@Get(':id')
-	@Auth()
 	async getById(@Param('id') id: string) {
 		return this.setupsService.byId(+id)
 	}
