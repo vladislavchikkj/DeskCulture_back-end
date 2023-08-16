@@ -101,10 +101,11 @@ export class ProductService {
 	}
 
 	async bySlug(slug: string) {
-		const product = await this.prisma.product.findUnique({
+		const product = await this.prisma.product.findMany({
 			where: { slug },
 			select: productReturnObjectFullest
 		})
+
 		if (!product) {
 			throw new NotFoundException('Product not found')
 		}
@@ -149,7 +150,7 @@ export class ProductService {
 		const products = await this.prisma.product.findMany({
 			where: {
 				category: {
-					name: currentProduct.category.name
+					slug: currentProduct.category.slug
 				},
 				NOT: {
 					id: currentProduct.id
