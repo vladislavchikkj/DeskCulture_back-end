@@ -64,7 +64,6 @@ export class UserService {
 
 	async toggleFavorite(userId: number, productId: number) {
 		const user = await this.byId(userId)
-		console.log(user)
 		if (!user) throw new NotFoundException('User not found!')
 
 		const isExist = user.favorites.some(product => product.id === productId)
