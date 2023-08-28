@@ -5,11 +5,11 @@ import {
 	NotFoundException,
 	UnauthorizedException
 } from '@nestjs/common'
+import { JwtService } from '@nestjs/jwt'
+import { User } from '@prisma/client'
 import { hash, verify } from 'argon2'
 import { PrismaService } from 'src/prisma.service'
 import { AuthDto } from './dto/auth.dto'
-import { JwtService } from '@nestjs/jwt'
-import { User } from '@prisma/client'
 
 @Injectable()
 export class AuthService {
@@ -44,12 +44,14 @@ export class AuthService {
 				email: dto.email
 			}
 		})
-		if (oldUser) throw new BadRequestException(`User already exists`)
+		if (oldUser) {
+			throw new BadRequestException(`User already exists`)
+		}
+
 		const user = await this.prisma.user.create({
 			data: {
 				email: dto.email,
-				name: faker.name.firstName(),
-				phone: faker.phone.number('+9 (###) ###-##-##'),
+				name: dto.name, // Use the provided name from DTO
 				password: await hash(dto.password)
 			}
 		})
@@ -61,6 +63,7 @@ export class AuthService {
 			...tokens
 		}
 	}
+
 	private async issueToken(userId: number) {
 		const data = { id: userId }
 		const accessToken = this.jwt.sign(data, {

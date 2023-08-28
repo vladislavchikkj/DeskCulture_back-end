@@ -45,8 +45,10 @@ export class UserService {
 		const isSameUser = await this.prisma.user.findUnique({
 			where: { email: dto.email }
 		})
-		if (!isSameUser && id != isSameUser.id)
+
+		if (isSameUser && id !== isSameUser.id) {
 			throw new BadRequestException('Email already in use')
+		}
 
 		const user = await this.byId(id)
 
@@ -55,7 +57,7 @@ export class UserService {
 			data: {
 				email: dto.email,
 				name: dto.name,
-				avatarPath: dto.avatapPath,
+				avatarPath: dto.avatarPath, // Fixed property name
 				phone: dto.phone,
 				password: dto.password ? await hash(dto.password) : user.password
 			}
