@@ -197,6 +197,12 @@ export class ProductService {
 		})
 	}
 	async delete(id: number) {
+		// Сначала удаляем связанные отзывы продукта
+		await this.prisma.review.deleteMany({
+			where: { productId: id } // Удалить все отзывы с совпадающим productId
+		})
+
+		// Затем удаляем сам продукт
 		return this.prisma.product.delete({
 			where: { id }
 		})

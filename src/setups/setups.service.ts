@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common'
+import { Product, Setups } from '@prisma/client'
 import { PrismaService } from 'src/prisma.service'
 import { returnSetupsObject } from './return-setups.object'
 import { SetupsDto } from './setups.dto'
@@ -7,21 +8,32 @@ import { SetupsDto } from './setups.dto'
 export class SetupsService {
 	constructor(private prisma: PrismaService) {}
 
-	async byId(id: number) {
-		const setups = await this.prisma.setups.findUnique({
-			where: { id },
-			select: returnSetupsObject
-		})
-		if (!setups) {
-			throw new Error('Setups not found')
-		}
-		return setups
-	}
-
 	async getAll() {
 		return this.prisma.setups.findMany({
 			select: returnSetupsObject
 		})
+	}
+
+	async byId(id: number) {
+		const setup = await this.prisma.setups.findUnique({
+			where: { id },
+			select: {
+				...returnSetupsObject,
+				products: {
+					select: {
+						id: true,
+						name: true
+						// Другие поля продукта, которые вы хотите выбрать
+					}
+				}
+			}
+		})
+
+		if (!setup) {
+			throw new Error('Setups not found')
+		}
+
+		return setup
 	}
 	async create() {
 		return this.prisma.setups.create({
@@ -45,5 +57,24 @@ export class SetupsService {
 		return this.prisma.setups.delete({
 			where: { id }
 		})
+	}
+	async addProductToSetup(setupId: number, productId: number): Promise<Setups> {
+		return this.prisma.setups.update({
+			where: { id: setupId },
+			data: {
+				products: {
+					connect: [{ id: productId }]
+				}
+			}
+		})
+	}
+
+	async getProductsInSetup(setupId: number): Promise<Product[]> {
+		return this.prisma.setups
+			.findUnique({
+				where: { id: setupId },
+				select: { products: true }
+			})
+			.products()
 	}
 }

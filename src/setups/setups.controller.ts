@@ -48,4 +48,16 @@ export class SetupsController {
 	async delete(@Param('id') id: string) {
 		return this.setupsService.delete(+id)
 	}
+	@Post(':setupId/addProduct/:productId')
+	async addProductToSetup(
+		@Param('setupId') setupId: string,
+		@Param('productId') productId: string
+	) {
+		return this.setupsService.addProductToSetup(+setupId, +productId)
+	}
+
+	@Get(':setupId/products')
+	async getProductsInSetup(@Param('setupId') setupId: string) {
+		return this.setupsService.getProductsInSetup(+setupId)
+	}
 }

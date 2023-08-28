@@ -30,19 +30,20 @@ model Product {
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
-  name        String
-  slug        String
-  description String
-  price       Int
-  images      String[]
-  orderItems  OrderItem[]
-  reviews     Review[]
-  category    Category?   @relation(fields: [categoryId], references: [id])
-  categoryId  Int?        @map("category_id")
-  user        User?       @relation(fields: [userId], references: [id])
-  userId      Int?
-  setups      Setups?     @relation(fields: [setupsId], references: [id])
-  setupsId    Int?        @map("setups_id")
+  name            String
+  slug            String
+  description     String
+  price           Int
+  images          String[]
+  orderItems      OrderItem[]
+  reviews         Review[]
+  category        Category?         @relation(fields: [categoryId], references: [id])
+  categoryId      Int?              @map("category_id")
+  user            User?             @relation(fields: [userId], references: [id])
+  userId          Int?
+  setups          Setups?           @relation(fields: [setupsId], references: [id])
+  setupsId        Int?              @map("setups_id")
+  ProductInSetups ProductInSetups[]
 }
 
 model Category {
@@ -50,11 +51,12 @@ model Category {
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
-  name        String
-  slug        String    @unique
-  description String
-  image       String
-  products    Product[]
+  name             String
+  slug             String            @unique
+  description      String
+  image            String
+  products         Product[]
+  productsInSetups ProductInSetups[]
 }
 
 model Setups {
@@ -62,10 +64,23 @@ model Setups {
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
-  name        String
-  description String
-  image       String
-  products    Product[]
+  name            String
+  description     String
+  image           String
+  products        Product[]
+  ProductInSetups ProductInSetups[]
+}
+
+model ProductInSetups {
+  id         Int       @id @default(autoincrement())
+  setup      Setups    @relation(fields: [setupId], references: [id])
+  setupId    Int
+  product    Product   @relation(fields: [productId], references: [id])
+  productId  Int
+  Category   Category? @relation(fields: [categoryId], references: [id])
+  categoryId Int?
+
+  @@unique([setupId, productId])
 }
 
 model Review {
