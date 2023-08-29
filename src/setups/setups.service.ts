@@ -59,22 +59,27 @@ export class SetupsService {
 		})
 	}
 	async addProductToSetup(setupId: number, productId: number): Promise<Setups> {
-		return this.prisma.setups.update({
-			where: { id: setupId },
+		// Создаем новую запись в ProductInSetups для связи продукта с сетапом
+		await this.prisma.productInSetups.create({
 			data: {
-				products: {
-					connect: [{ id: productId }]
-				}
+				setup: { connect: { id: setupId } },
+				product: { connect: { id: productId } }
 			}
+		})
+
+		// Возвращаем обновленный сетап
+		return this.prisma.setups.findUnique({
+			where: { id: setupId },
+			include: { products: true }
 		})
 	}
 
 	async getProductsInSetup(setupId: number): Promise<Product[]> {
-		return this.prisma.setups
-			.findUnique({
-				where: { id: setupId },
-				select: { products: true }
+		return this.prisma.productInSetups
+			.findMany({
+				where: { setupId },
+				include: { product: true }
 			})
-			.products()
+			.then(productInSetups => productInSetups.map(pis => pis.product))
 	}
 }

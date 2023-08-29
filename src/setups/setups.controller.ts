@@ -10,6 +10,7 @@ import {
 	UsePipes,
 	ValidationPipe
 } from '@nestjs/common'
+import { Product } from '@prisma/client'
 import { Auth } from 'src/auth/decorator/auth.decorator'
 import { SetupsDto } from './setups.dto'
 import { SetupsService } from './setups.service'
@@ -57,7 +58,9 @@ export class SetupsController {
 	}
 
 	@Get(':setupId/products')
-	async getProductsInSetup(@Param('setupId') setupId: string) {
+	async getProductsInSetup(
+		@Param('setupId') setupId: string
+	): Promise<Product[]> {
 		return this.setupsService.getProductsInSetup(+setupId)
 	}
 }
