@@ -12,41 +12,33 @@ export class StatisticService {
 		private userService: UserService
 	) {}
 
-	async getMain(userId: number) {
-		const user = await this.userService.byId(userId, {
-			orders: {
-				select: {
-					items: true
-				}
-			},
-			reviews: true
-		})
+	async getMain() {
+		const ordersCount = await this.prisma.order.count()
+		const reviewsCount = await this.prisma.review.count()
+		const usersCount = await this.prisma.user.count()
 
-		// const totalAmount = await this.prisma.order.aggregate({
-		// 	where: {
-		// 		userId
-		// 	},
-		// 	_sum: {
-		// 		items: true
-		// 	}
-		// })
+		const totalAmount = await this.prisma.order.aggregate({
+			_sum: {
+				total: true
+			}
+		})
 
 		return [
 			{
 				name: 'Orders',
-				value: user.orders.length
+				value: ordersCount
 			},
 			{
 				name: 'Reviews',
-				value: user.reviews.length
+				value: reviewsCount
 			},
 			{
-				name: 'Favorites',
-				value: user.favorites.length
+				name: 'Users',
+				value: usersCount
 			},
 			{
 				name: 'Total amount',
-				value: 1000
+				value: totalAmount._sum.total
 			}
 		]
 	}

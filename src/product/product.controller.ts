@@ -53,7 +53,7 @@ export class ProductController {
 
 	@UsePipes(new ValidationPipe())
 	@HttpCode(200)
-	@Auth()
+	@Auth('admin')
 	@Post()
 	async createProduct() {
 		return this.productService.create()
@@ -62,14 +62,14 @@ export class ProductController {
 	@UsePipes(new ValidationPipe())
 	@HttpCode(200)
 	@Put(':id')
-	@Auth()
+	@Auth('admin')
 	async updateProduct(@Param('id') id: string, @Body() dto: ProductDto) {
 		return this.productService.update(+id, dto)
 	}
 
 	@HttpCode(200)
 	@Delete(':id')
-	@Auth()
+	@Auth('admin')
 	async deleteProduct(@Param('id') id: string) {
 		return this.productService.delete(+id)
 	}
