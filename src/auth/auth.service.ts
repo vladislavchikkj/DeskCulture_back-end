@@ -14,10 +14,10 @@ import { AuthDto } from './dto/auth.dto'
 @Injectable()
 export class AuthService {
 	constructor(
-		private prisma: PrismaService, 
-		private jwt: JwtService, 
+		private prisma: PrismaService,
+		private jwt: JwtService,
 		private userService: UserService
-		) {}
+	) {}
 
 	async login(dto: AuthDto) {
 		const user = await this.validateUser(dto)
@@ -82,10 +82,11 @@ export class AuthService {
 	}
 
 	private returnUserField(user: Partial<User>) {
-		return { 
+		return {
 			id: user.id,
-			email: user.email, 
-			isAdmin: user.isAdmin }
+			email: user.email,
+			isAdmin: user.isAdmin
+		}
 	}
 
 	private async validateUser(dto: AuthDto) {

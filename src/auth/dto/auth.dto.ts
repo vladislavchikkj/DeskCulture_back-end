@@ -11,4 +11,6 @@ export class AuthDto {
 	password: string
 
 	name: string
+
+	isAdmin: boolean // Add this field for indicating admin status
 }
