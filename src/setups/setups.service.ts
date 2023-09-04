@@ -77,7 +77,7 @@ export class SetupsService {
 	async getProductsInSetup(setupId: number): Promise<Product[]> {
 		return this.prisma.productInSetups
 			.findMany({
-				where: { setupId },
+				where: { setupId: { equals: setupId } },
 				include: { product: true }
 			})
 			.then(productInSetups => productInSetups.map(pis => pis.product))

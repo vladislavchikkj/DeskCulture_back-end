@@ -9,6 +9,7 @@ import { User } from '@prisma/client'
 import { hash, verify } from 'argon2'
 import { PrismaService } from 'src/prisma.service'
 import { UserService } from 'src/user/user.service'
+import { ChangePasswordDto } from './change-password/change-password.dto'
 import { AuthDto } from './dto/auth.dto'
 
 @Injectable()
@@ -100,5 +101,36 @@ export class AuthService {
 		const isValid = await verify(user.password, dto.password)
 		if (!isValid) throw new UnauthorizedException('Invalid password')
 		return user
+	}
+
+	private async changePassword(
+		changePasswordDto: ChangePasswordDto,
+		userId: number
+	) {
+		const user = await this.prisma.user.findUnique({
+			where: { id: userId }
+		})
+
+		if (!user) {
+			throw new NotFoundException('User not found')
+		}
+
+		const isPasswordValid = await verify(
+			user.password,
+			changePasswordDto.currentPassword
+		)
+
+		if (!isPasswordValid) {
+			throw new UnauthorizedException('Invalid current password')
+		}
+
+		const newPasswordHash = await hash(changePasswordDto.newPassword)
+
+		const updatedUser = await this.prisma.user.update({
+			where: { id: userId },
+			data: { password: newPasswordHash }
+		})
+
+		return { message: 'Password updated successfully' }
 	}
 }
