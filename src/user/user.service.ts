@@ -57,7 +57,7 @@ export class UserService {
 			data: {
 				email: dto.email,
 				name: dto.name,
-				avatarPath: dto.avatarPath, // Fixed property name
+				avatarPath: dto.avatarPath,
 				phone: dto.phone,
 				password: dto.password ? await hash(dto.password) : user.password
 			}

@@ -20,7 +20,7 @@ const createProducts = async (quantity: number) => {
 
 		// Генерируем случайное имя настройки и формируем ее изображение
 		const setupName = faker.commerce.department()
-		const setupImage = faker.image.imageUrl(200, 200, 'abstract') // Замените 'abstract' на нужную категорию
+		const setupImage = faker.image.imageUrl(200, 200, 'abstract')
 
 		// Создаем продукт с помощью Prisma
 		const product = await prisma.product.create({
