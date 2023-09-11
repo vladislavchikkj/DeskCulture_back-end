@@ -82,4 +82,35 @@ export class UserService {
 		})
 		return { message: 'Success' }
 	}
+
+	async findByEmail(email: string, selectObject: Prisma.UserSelect = {}) {
+		const user = await this.prisma.user.findUnique({
+			where: { email },
+			select: {
+				...returnUserObject,
+				favorites: {
+					select: {
+						id: true,
+						name: true,
+						price: true,
+						images: true,
+						slug: true,
+						category: {
+							select: {
+								slug: true
+							}
+						},
+						reviews: true
+					}
+				},
+				...selectObject
+			}
+		})
+
+		if (!user) {
+			throw new NotFoundException('User not found')
+		}
+
+		return user
+	}
 }

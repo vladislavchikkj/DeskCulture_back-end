@@ -11,6 +11,7 @@ import { PrismaService } from 'src/prisma.service'
 import { UserService } from 'src/user/user.service'
 import { ChangePasswordDto } from './change-password/change-password.dto'
 import { AuthDto } from './dto/auth.dto'
+import { ForgotPasswordDto } from './dto/forgot-password.dto'
 
 @Injectable()
 export class AuthService {
@@ -103,34 +104,51 @@ export class AuthService {
 		return user
 	}
 
-	private async changePassword(
-		changePasswordDto: ChangePasswordDto,
-		userId: number
-	) {
-		const user = await this.prisma.user.findUnique({
-			where: { id: userId }
-		})
+	// CHANGE PASSWORD
+
+	// async changePassword(
+	// 	userId: string,
+	// 	changePasswordDto: ChangePasswordDto
+	// ): Promise<boolean> {
+	// 	const password = await this.userService.hashPassword(
+	// 		changePasswordDto.password
+	// 	)
+
+	// 	await this.userService.updateProfile(userId, { password })
+	// 	await this.tokenService.deleteAll(userId)
+	// 	return true
+	// }
+
+	private async forgotPassword(
+		forgotPasswordDto: ForgotPasswordDto
+	): Promise<void> {
+		const user = this.userService.findByEmail(forgotPasswordDto.email)
 
 		if (!user) {
-			throw new NotFoundException('User not found')
+			throw new BadRequestException('Invalid email')
+		}
+	}
+
+	async changePassword(userId: number, changePasswordDto: ChangePasswordDto) {
+		const user = await this.userService.byId(userId)
+
+		if (!user) {
+			throw new NotFoundException('Пользователь не найден')
 		}
 
-		const isPasswordValid = await verify(
-			user.password,
-			changePasswordDto.currentPassword
-		)
+		const isValid = await verify(user.password, changePasswordDto.oldPassword)
 
-		if (!isPasswordValid) {
-			throw new UnauthorizedException('Invalid current password')
+		if (!isValid) {
+			throw new UnauthorizedException('Неверный старый пароль')
 		}
 
 		const newPasswordHash = await hash(changePasswordDto.newPassword)
 
-		const updatedUser = await this.prisma.user.update({
+		await this.prisma.user.update({
 			where: { id: userId },
 			data: { password: newPasswordHash }
 		})
 
-		return { message: 'Password updated successfully' }
+		return true
 	}
 }
