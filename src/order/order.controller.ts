@@ -1,6 +1,15 @@
-import { Controller, Get } from '@nestjs/common'
+import {
+	Body,
+	Controller,
+	Get,
+	HttpCode,
+	Post,
+	UsePipes,
+	ValidationPipe
+} from '@nestjs/common'
 import { Auth } from 'src/auth/decorator/auth.decorator'
 import { CurrentUser } from 'src/auth/decorator/user.decorator'
+import { OrderDto } from './order.dto'
 import { OrderService } from './order.service'
 
 @Controller('orders')
@@ -18,17 +27,27 @@ export class OrderController {
 		return this.orderService.getByUserId(userId)
 	}
 
-	// @UsePipes(new ValidationPipe())
-	// @HttpCode(200)
-	// @Post()
-	// @Auth()
-	// placeOrder(@Body() dto: OrderDto, @CurrentUser('id') userId: number) {
-	// 	return this.orderService.placeOrder(dto, userId)
-	// }
+	@UsePipes(new ValidationPipe())
+	@HttpCode(200)
+	@Post()
+	@Auth()
+	placeOrder(@Body() dto: OrderDto, @CurrentUser('id') userId: number) {
+		return this.orderService.placeOrder(dto, userId)
+	}
 
-	// @HttpCode(200)
-	// @Post('status')
-	// async updateStatus(@Body() dto: PaymentStatusDto) {
-	// 	return this.orderService.updateStatus(dto)
-	// }
+	@Get('test-stripe')
+	stripe() {
+		return this.orderService.testStripe()
+	}
+
+	@UsePipes(new ValidationPipe())
+	@HttpCode(200)
+	@Post('create-stripe-session')
+	@Auth()
+	async createStripeSession(
+		@Body() dto: OrderDto,
+		@CurrentUser('id') userId: number
+	) {
+		return this.orderService.createStripeSession(userId, dto)
+	}
 }
