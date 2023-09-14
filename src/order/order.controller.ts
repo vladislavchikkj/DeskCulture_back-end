@@ -9,8 +9,10 @@ import {
 } from '@nestjs/common'
 import { Auth } from 'src/auth/decorator/auth.decorator'
 import { CurrentUser } from 'src/auth/decorator/user.decorator'
+import Stripe from 'stripe'
 import { OrderDto } from './order.dto'
 import { OrderService } from './order.service'
+import { StripeWebhook } from './stripe-webhook.decorator'
 
 @Controller('orders')
 export class OrderController {
@@ -29,25 +31,25 @@ export class OrderController {
 
 	@UsePipes(new ValidationPipe())
 	@HttpCode(200)
-	@Post()
-	@Auth()
-	placeOrder(@Body() dto: OrderDto, @CurrentUser('id') userId: number) {
-		return this.orderService.placeOrder(dto, userId)
-	}
-
-	@Get('test-stripe')
-	stripe() {
-		return this.orderService.testStripe()
-	}
-
-	@UsePipes(new ValidationPipe())
-	@HttpCode(200)
 	@Post('create-stripe-session')
 	@Auth()
-	async createStripeSession(
-		@Body() dto: OrderDto,
-		@CurrentUser('id') userId: number
-	) {
-		return this.orderService.createStripeSession(userId, dto)
+	async placeOrder(@Body() dto: OrderDto, @CurrentUser('id') userId: number) {
+		try {
+			console.log('Получено событие!!')
+			const result = await this.orderService.placeOrder(dto, userId)
+			return {
+				order: result.order,
+				confirmationUrl: result
+			}
+		} catch (error) {
+			return { error: error.message }
+		}
+	}
+
+	@Post('webhook')
+	@StripeWebhook()
+	async webhook(@Body() event: Stripe.Event) {
+		console.log('Получено событие от Stripe:', event)
+		return this.orderService.handleStripeWebhook(event)
 	}
 }
