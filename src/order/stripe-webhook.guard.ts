@@ -2,9 +2,11 @@
 import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common'
 import { Request } from 'express'
 import Stripe from 'stripe'
+
 const stripe = new Stripe(process.env.SECRET_KEY, {
 	apiVersion: '2023-08-16'
 })
+
 @Injectable()
 export class StripeWebhookGuard implements CanActivate {
 	async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -12,7 +14,8 @@ export class StripeWebhookGuard implements CanActivate {
 		try {
 			const signature = req.headers['stripe-signature']
 			const event = stripe.webhooks.constructEvent(
-				req.body,
+				// @ts-ignore
+				req.rawBody,
 				signature,
 				process.env.STRIPE_WEBHOOK_SECRET
 			)

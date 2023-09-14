@@ -35,7 +35,6 @@ export class OrderController {
 	@Auth()
 	async placeOrder(@Body() dto: OrderDto, @CurrentUser('id') userId: number) {
 		try {
-			console.log('Получено событие!!')
 			const result = await this.orderService.placeOrder(dto, userId)
 			return {
 				order: result.order,
