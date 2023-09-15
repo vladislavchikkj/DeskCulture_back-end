@@ -20,7 +20,6 @@ export class StripeWebhookGuard implements CanActivate {
 				process.env.STRIPE_WEBHOOK_SECRET
 			)
 			req.body = event
-			console.log('Stripe webhook guard called:', event.type)
 			return true
 		} catch (err) {
 			console.error(

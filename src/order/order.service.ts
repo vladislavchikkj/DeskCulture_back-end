@@ -80,49 +80,58 @@ export class OrderService {
 			}
 		})
 
+		const products = await this.prisma.product.findMany({
+			where: {
+				id: {
+					in: dto.items.map(item => item.productId)
+				}
+			}
+		})
+
 		// Создаем line_items для Stripe Checkout Session
-		let line_items = dto.items.map(item => ({
-			price_data: {
-				currency: 'usd',
-				product_data: {
-					name: `Product #${item.productId}`
+		let line_items = dto.items.map(item => {
+			const product = products.find(p => p.id === item.productId)
+
+			return {
+				price_data: {
+					currency: 'usd',
+					product_data: {
+						name: `${product.name}`,
+						images: product.images ? [product.images[0]] : []
+					},
+					unit_amount: Math.round(item.price * 100)
 				},
-				unit_amount: Math.round(item.price * 100)
-			},
-			quantity: item.quantity
-		}))
+				quantity: item.quantity
+			}
+		})
 
 		// Создаем Stripe Checkout Session
 		const session = await this.stripe.checkout.sessions.create({
 			payment_method_types: ['card'],
 			line_items: line_items,
 			mode: 'payment',
-			success_url:
-				'https://example.com/success?session_id={CHECKOUT_SESSION_ID}',
-			cancel_url: 'https://example.com/canceled',
+			success_url: 'http://localhost:3000/thanks',
+			// 'https://example.com/success?session_id={CHECKOUT_SESSION_ID}',
+			cancel_url: 'http://localhost:3000/wrong',
 			metadata: {
 				orderId: order.id.toString()
 			}
 		})
-
 		return {
 			order,
 			confirmationUrl: session
 		}
 	}
 	async handleStripeWebhook(event: Stripe.Event) {
-		console.log('Обработка события:', event.type)
 		switch (event.type) {
 			case 'checkout.session.completed':
 				const session = event.data.object as Stripe.Checkout.Session
 				const orderId = session.metadata.orderId
-				console.log('Обновление заказа с идентификатором:', orderId)
 				if (orderId) {
-					const updatedOrder = await this.prisma.order.update({
+					await this.prisma.order.update({
 						where: { id: parseInt(orderId, 10) },
 						data: { status: EnumOrderStatus.PAYED }
 					})
-					console.log('Заказ успешно обновлён:', updatedOrder)
 					return { statusCode: 200, message: 'Webhook handled successfully' }
 				} else {
 					console.error('Не удалось найти идентификатор заказа в сессии.')

@@ -31,7 +31,7 @@ export class OrderController {
 
 	@UsePipes(new ValidationPipe())
 	@HttpCode(200)
-	@Post('create-stripe-session')
+	@Post()
 	@Auth()
 	async placeOrder(@Body() dto: OrderDto, @CurrentUser('id') userId: number) {
 		try {
@@ -48,7 +48,6 @@ export class OrderController {
 	@Post('webhook')
 	@StripeWebhook()
 	async webhook(@Body() event: Stripe.Event) {
-		console.log('Получено событие от Stripe:', event)
 		return this.orderService.handleStripeWebhook(event)
 	}
 }
