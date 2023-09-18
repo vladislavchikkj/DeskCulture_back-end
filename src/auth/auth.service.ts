@@ -47,13 +47,18 @@ export class AuthService {
 	}
 
 	async register(dto: AuthDto) {
-		const oldUser = await this.prisma.user.findUnique({
+		const userWithEmail = await this.prisma.user.findUnique({
 			where: {
 				email: dto.email
 			}
 		})
-		if (oldUser) {
-			throw new BadRequestException(`User already exists`)
+		if (userWithEmail) {
+			throw new BadRequestException(`User with this email already exists`)
+		}
+
+		const userWithName = await this.userExistsWithName(dto.name)
+		if (userWithName) {
+			throw new BadRequestException(`User with this name already exists`)
 		}
 
 		const user = await this.prisma.user.create({
@@ -70,6 +75,11 @@ export class AuthService {
 			user: this.returnUserField(user),
 			...tokens
 		}
+	}
+
+	async userExistsWithName(name: string): Promise<boolean> {
+		const existingUser = await this.prisma.user.findUnique({ where: { name } })
+		return !!existingUser
 	}
 
 	private async issueToken(userId: number) {
@@ -104,20 +114,12 @@ export class AuthService {
 		return user
 	}
 
+	async checkUsername(name: string): Promise<boolean> {
+		const existingUser = await this.prisma.user.findUnique({ where: { name } })
+		return !!existingUser
+	}
+
 	// CHANGE PASSWORD
-
-	// async changePassword(
-	// 	userId: string,
-	// 	changePasswordDto: ChangePasswordDto
-	// ): Promise<boolean> {
-	// 	const password = await this.userService.hashPassword(
-	// 		changePasswordDto.password
-	// 	)
-
-	// 	await this.userService.updateProfile(userId, { password })
-	// 	await this.tokenService.deleteAll(userId)
-	// 	return true
-	// }
 
 	private async forgotPassword(
 		forgotPasswordDto: ForgotPasswordDto
