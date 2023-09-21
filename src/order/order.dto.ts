@@ -5,6 +5,7 @@ import {
 	IsEnum,
 	IsNumber,
 	IsOptional,
+	IsString,
 	ValidateNested
 } from 'class-validator'
 
@@ -17,6 +18,36 @@ export class OrderDto {
 	@ValidateNested({ each: true })
 	@Type(() => OrderItemDto)
 	items: OrderItemDto[]
+
+	@IsString()
+	firstName: string
+
+	@IsString()
+	lastName: string
+
+	@IsString()
+	country: string
+
+	@IsString()
+	state: string
+
+	@IsString()
+	city: string
+
+	@IsString()
+	postCode: string
+
+	@IsString()
+	street: string
+
+	@IsString()
+	house: string
+
+	@IsString()
+	phoneCode: string
+
+	@IsString()
+	phone: string
 }
 
 export class OrderItemDto {

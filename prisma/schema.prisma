@@ -113,6 +113,17 @@ model Order {
     userId Int  @map("user_id")
 
     paymentIntentId String
+
+    firstName String
+    lastName  String
+    country   String
+    state     String
+    city      String
+    postCode  String
+    street    String
+    house     String
+    phoneCode String
+    phone     String
 }
 
 enum EnumOrderStatus {

@@ -38,7 +38,7 @@ export class OrderController {
 			const result = await this.orderService.placeOrder(dto, userId)
 			return {
 				order: result.order,
-				confirmationUrl: result
+				confirmationUrl: result.confirmationUrl.url
 			}
 		} catch (error) {
 			return { error: error.message }

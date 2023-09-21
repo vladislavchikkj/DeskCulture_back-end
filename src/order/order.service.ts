@@ -69,6 +69,7 @@ export class OrderService {
 			data: {
 				status: dto.status,
 				total: total,
+				paymentIntentId: 'ваш_идентификатор_платежа',
 				items: {
 					create: dto.items
 				},
@@ -76,7 +77,17 @@ export class OrderService {
 					connect: {
 						id: userId
 					}
-				}
+				},
+				firstName: dto.firstName,
+				lastName: dto.lastName,
+				country: dto.country,
+				state: dto.state,
+				city: dto.city,
+				postCode: dto.postCode,
+				street: dto.street,
+				house: dto.house,
+				phoneCode: dto.phoneCode,
+				phone: dto.phone
 			}
 		})
 
