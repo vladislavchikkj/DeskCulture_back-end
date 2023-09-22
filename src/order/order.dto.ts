@@ -1,3 +1,4 @@
+import { Optional } from '@nestjs/common'
 import { EnumOrderStatus } from '@prisma/client'
 import { Type } from 'class-transformer'
 import {
@@ -48,6 +49,9 @@ export class OrderDto {
 
 	@IsString()
 	phone: string
+
+	@IsString()
+	email: string
 }
 
 export class OrderItemDto {

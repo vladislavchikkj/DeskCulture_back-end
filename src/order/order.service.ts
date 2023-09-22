@@ -43,6 +43,7 @@ export class OrderService {
 			}
 		})
 	}
+
 	async createPaymentIntent(
 		amount: number,
 		currency: string,
@@ -60,7 +61,7 @@ export class OrderService {
 			console.error('Error creating Stripe PaymentIntent', error)
 		}
 	}
-	async placeOrder(dto: OrderDto, userId: number) {
+	async placeOrder(dto: OrderDto, userId?: number) {
 		const total = dto.items.reduce((acc, item) => {
 			return acc + item.price * item.quantity
 		}, 0)
@@ -69,15 +70,18 @@ export class OrderService {
 			data: {
 				status: dto.status,
 				total: total,
-				paymentIntentId: 'ваш_идентификатор_платежа',
+				paymentIntentId: '',
+				paymentUrl: '',
 				items: {
 					create: dto.items
 				},
-				user: {
-					connect: {
-						id: userId
-					}
-				},
+				user: userId
+					? {
+							connect: {
+								id: userId
+							}
+					  }
+					: undefined,
 				firstName: dto.firstName,
 				lastName: dto.lastName,
 				country: dto.country,
@@ -87,7 +91,8 @@ export class OrderService {
 				street: dto.street,
 				house: dto.house,
 				phoneCode: dto.phoneCode,
-				phone: dto.phone
+				phone: dto.phone,
+				email: dto.email
 			}
 		})
 
@@ -121,6 +126,7 @@ export class OrderService {
 			payment_method_types: ['card'],
 			line_items: line_items,
 			mode: 'payment',
+			customer_email: dto.email,
 			success_url: 'http://localhost:3000/thanks',
 			// 'https://example.com/success?session_id={CHECKOUT_SESSION_ID}',
 			cancel_url: 'http://localhost:3000/wrong',
@@ -128,24 +134,33 @@ export class OrderService {
 				orderId: order.id.toString()
 			}
 		})
-		return {
-			order,
-			confirmationUrl: session
-		}
+		await this.prisma.order.update({
+			where: { id: order.id },
+			data: { paymentUrl: session.url }
+		})
+		return session
 	}
 	async handleStripeWebhook(event: Stripe.Event) {
 		switch (event.type) {
 			case 'checkout.session.completed':
 				const session = event.data.object as Stripe.Checkout.Session
 				const orderId = session.metadata.orderId
-				if (orderId) {
+				const paymentIntentId = session.payment_intent as string
+				const customerEmail = session.customer_email as string
+				if (orderId && paymentIntentId) {
 					await this.prisma.order.update({
 						where: { id: parseInt(orderId, 10) },
-						data: { status: EnumOrderStatus.PAYED }
+						data: {
+							status: EnumOrderStatus.PAYED,
+							paymentIntentId: paymentIntentId,
+							email: customerEmail
+						}
 					})
 					return { statusCode: 200, message: 'Webhook handled successfully' }
 				} else {
-					console.error('Не удалось найти идентификатор заказа в сессии.')
+					console.error(
+						'Не удалось найти идентификатор заказа и айди платежа в сессии.'
+					)
 				}
 				break
 			default:

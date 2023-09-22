@@ -109,10 +109,11 @@ model Order {
     items OrderItem[]
     total Int
 
-    user   User @relation(fields: [userId], references: [id])
-    userId Int  @map("user_id")
+    user   User? @relation(fields: [userId], references: [id])
+    userId Int?  @map("user_id")
 
     paymentIntentId String
+    paymentUrl      String?
 
     firstName String
     lastName  String
@@ -124,6 +125,7 @@ model Order {
     house     String
     phoneCode String
     phone     String
+    email     String
 }
 
 enum EnumOrderStatus {

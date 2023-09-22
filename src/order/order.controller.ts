@@ -32,13 +32,11 @@ export class OrderController {
 	@UsePipes(new ValidationPipe())
 	@HttpCode(200)
 	@Post()
-	@Auth()
 	async placeOrder(@Body() dto: OrderDto, @CurrentUser('id') userId: number) {
 		try {
 			const result = await this.orderService.placeOrder(dto, userId)
 			return {
-				order: result.order,
-				confirmationUrl: result.confirmationUrl.url
+				orderResponse: result
 			}
 		} catch (error) {
 			return { error: error.message }
