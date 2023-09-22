@@ -66,34 +66,37 @@ export class OrderService {
 			return acc + item.price * item.quantity
 		}, 0)
 
-		const order = await this.prisma.order.create({
-			data: {
-				status: dto.status,
-				total: total,
-				paymentIntentId: '',
-				paymentUrl: '',
-				items: {
-					create: dto.items
-				},
-				user: userId
-					? {
-							connect: {
-								id: userId
-							}
-					  }
-					: undefined,
-				firstName: dto.firstName,
-				lastName: dto.lastName,
-				country: dto.country,
-				state: dto.state,
-				city: dto.city,
-				postCode: dto.postCode,
-				street: dto.street,
-				house: dto.house,
-				phoneCode: dto.phoneCode,
-				phone: dto.phone,
-				email: dto.email
+		const orderData = {
+			status: dto.status,
+			total: total,
+			paymentIntentId: '',
+			paymentUrl: '',
+			items: {
+				create: dto.items
+			},
+			firstName: dto.firstName,
+			lastName: dto.lastName,
+			country: dto.country,
+			state: dto.state,
+			city: dto.city,
+			postCode: dto.postCode,
+			street: dto.street,
+			house: dto.house,
+			phoneCode: dto.phoneCode,
+			phone: dto.phone,
+			email: dto.email
+		}
+
+		if (userId) {
+			orderData['user'] = {
+				connect: {
+					id: userId
+				}
 			}
+		}
+
+		const order = await this.prisma.order.create({
+			data: orderData
 		})
 
 		const products = await this.prisma.product.findMany({
