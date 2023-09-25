@@ -21,13 +21,19 @@ export class ReviewService {
 			select: returnReviewObject
 		})
 	}
-	async create(userId: number, dto: ReviewDto, productId: number) {
+	async create(
+		userId: number,
+		dto: ReviewDto,
+		productId: number,
+		imageFile?: Express.Multer.File
+	) {
 		await this.productService.byId(productId)
 		const userDetails = await this.userService.byId(userId) // Получаем данные о пользователе
 
 		const createdReview = await this.prisma.review.create({
 			data: {
 				...dto,
+				imageUrl: imageFile?.filename ?? null,
 				product: {
 					connect: {
 						id: productId

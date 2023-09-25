@@ -1,4 +1,4 @@
-import { IsNumber, IsString, Max, Min } from 'class-validator'
+import { IsNumber, IsOptional, IsString, Max, Min } from 'class-validator'
 
 export class ReviewDto {
 	@IsNumber()
@@ -8,4 +8,8 @@ export class ReviewDto {
 
 	@IsString()
 	text: string
+
+	@IsString()
+	@IsOptional()
+	imageUrl?: string
 }

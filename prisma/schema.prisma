@@ -89,8 +89,9 @@ model Review {
     createdAt DateTime @default(now()) @map("created_at")
     updatedAt DateTime @updatedAt @map("updated_at")
 
-    rating Int
-    text   String
+    rating   Int
+    text     String
+    imageUrl String?
 
     user   User @relation(fields: [userId], references: [id])
     userId Int  @map("user_id")
