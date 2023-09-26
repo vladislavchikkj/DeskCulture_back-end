@@ -28,7 +28,7 @@ export class ReviewService {
 		imageFile?: Express.Multer.File
 	) {
 		await this.productService.byId(productId)
-		const userDetails = await this.userService.byId(userId) // Получаем данные о пользователе
+		const userDetails = await this.userService.byId(userId)
 
 		const createdReview = await this.prisma.review.create({
 			data: {
@@ -52,7 +52,7 @@ export class ReviewService {
 
 		return {
 			...createdReview,
-			username: userDetails.name // Возврат имени пользователя
+			username: userDetails.name
 		}
 	}
 

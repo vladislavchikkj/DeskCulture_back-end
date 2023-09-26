@@ -1,11 +1,42 @@
 import { Injectable } from '@nestjs/common'
 import { EnumOrderStatus } from '@prisma/client'
+import crypto from 'crypto'
 import { PrismaService } from 'src/prisma.service'
 import { productReturnObject } from 'src/product/return-product.object'
 import Stripe from 'stripe'
 import { OrderDto } from './order.dto'
 const stripe = require('stripe')(process.env['SECRET_KEY'])
+const keyBuffer = process.env['ENCRYPTION_KEY']
+	? Buffer.from(process.env['ENCRYPTION_KEY'], 'hex')
+	: crypto.randomBytes(32)
+const ENCRYPTION_KEY = keyBuffer
+const IV_LENGTH = 16
 
+function encrypt(text) {
+	let iv = crypto.randomBytes(IV_LENGTH)
+	let cipher = crypto.createCipheriv(
+		'aes-256-cbc',
+		Buffer.from(ENCRYPTION_KEY),
+		iv
+	)
+	let encrypted = cipher.update(text)
+	encrypted = Buffer.concat([encrypted, cipher.final()])
+	return iv.toString('hex') + ':' + encrypted.toString('hex')
+}
+
+function decrypt(text) {
+	let textParts = text.split(':')
+	let iv = Buffer.from(textParts.shift(), 'hex')
+	let encryptedText = Buffer.from(textParts.join(':'), 'hex')
+	let decipher = crypto.createDecipheriv(
+		'aes-256-cbc',
+		Buffer.from(ENCRYPTION_KEY),
+		iv
+	)
+	let decrypted = decipher.update(encryptedText)
+	decrypted = Buffer.concat([decrypted, decipher.final()])
+	return decrypted.toString()
+}
 @Injectable()
 export class OrderService {
 	private readonly stripe = new Stripe(process.env['SECRET_KEY'] || '', {
@@ -14,7 +45,7 @@ export class OrderService {
 	constructor(private prisma: PrismaService) {}
 
 	async getAll() {
-		return this.prisma.order.findMany({
+		const orders = await this.prisma.order.findMany({
 			include: {
 				items: {
 					include: {
@@ -25,9 +56,24 @@ export class OrderService {
 				}
 			}
 		})
+
+		orders.forEach(order => {
+			order.firstName = decrypt(order.firstName)
+			order.lastName = decrypt(order.lastName)
+			order.country = decrypt(order.country)
+			order.state = decrypt(order.state)
+			order.city = decrypt(order.city)
+			order.postCode = decrypt(order.postCode)
+			order.street = decrypt(order.street)
+			order.house = decrypt(order.house)
+			order.phoneCode = decrypt(order.phoneCode)
+			order.phone = decrypt(order.phone)
+			order.email = decrypt(order.email)
+		})
+		return orders
 	}
 	async getByUserId(userId: number) {
-		return this.prisma.order.findMany({
+		const orders = await this.prisma.order.findMany({
 			where: { userId },
 			orderBy: {
 				createdAt: 'desc'
@@ -42,6 +88,21 @@ export class OrderService {
 				}
 			}
 		})
+
+		orders.forEach(order => {
+			order.firstName = decrypt(order.firstName)
+			order.lastName = decrypt(order.lastName)
+			order.country = decrypt(order.country)
+			order.state = decrypt(order.state)
+			order.city = decrypt(order.city)
+			order.postCode = decrypt(order.postCode)
+			order.street = decrypt(order.street)
+			order.house = decrypt(order.house)
+			order.phoneCode = decrypt(order.phoneCode)
+			order.phone = decrypt(order.phone)
+			order.email = decrypt(order.email)
+		})
+		return orders
 	}
 
 	async createPaymentIntent(
@@ -74,17 +135,17 @@ export class OrderService {
 			items: {
 				create: dto.items
 			},
-			firstName: dto.firstName,
-			lastName: dto.lastName,
-			country: dto.country,
-			state: dto.state,
-			city: dto.city,
-			postCode: dto.postCode,
-			street: dto.street,
-			house: dto.house,
-			phoneCode: dto.phoneCode,
-			phone: dto.phone,
-			email: dto.email
+			firstName: encrypt(dto.firstName),
+			lastName: encrypt(dto.lastName),
+			country: encrypt(dto.country),
+			state: encrypt(dto.state),
+			city: encrypt(dto.city),
+			postCode: encrypt(dto.postCode),
+			street: encrypt(dto.street),
+			house: encrypt(dto.house),
+			phoneCode: encrypt(dto.phoneCode),
+			phone: encrypt(dto.phone),
+			email: encrypt(dto.email)
 		}
 
 		if (userId) {

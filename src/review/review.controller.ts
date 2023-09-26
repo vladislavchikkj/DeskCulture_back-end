@@ -3,6 +3,7 @@ import {
 	Controller,
 	Get,
 	HttpCode,
+	InternalServerErrorException,
 	Param,
 	Post,
 	UploadedFile,
@@ -39,7 +40,13 @@ export class ReviewController {
 		@Body() dto: ReviewDto,
 		@Param('productId') productId: string
 	) {
-		return this.reviewService.create(id, dto, +productId, file)
+		try {
+			console.log('test', file)
+			return this.reviewService.create(id, dto, +productId, file)
+		} catch (err) {
+			console.error(err)
+			throw new InternalServerErrorException('Failed to process the request')
+		}
 	}
 
 	@Get('average-by-product/:productId')
@@ -47,9 +54,10 @@ export class ReviewController {
 		return this.reviewService.getAverageValueByProductId(+productId)
 	}
 
-	@Post('test')
-	@UseInterceptors(FileInterceptor('test', multerConfig))
-	async uploadFile() {
-		return 'success-load-test'
+	@Post('upload')
+	@UseInterceptors(FileInterceptor('file'))
+	async uploadFile(@UploadedFile() file: Express.Multer.File) {
+		console.log('test', file)
+		return 'file upload'
 	}
 }
