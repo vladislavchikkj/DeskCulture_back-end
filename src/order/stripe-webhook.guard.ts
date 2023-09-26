@@ -15,7 +15,7 @@ export class StripeWebhookGuard implements CanActivate {
 			const signature = req.headers['stripe-signature']
 			const event = stripe.webhooks.constructEvent(
 				// @ts-ignore
-				req.rawBody,
+				req.body,
 				signature,
 				process.env.STRIPE_WEBHOOK_SECRET
 			)

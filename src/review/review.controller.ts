@@ -55,7 +55,7 @@ export class ReviewController {
 	}
 
 	@Post('upload')
-	@UseInterceptors(FileInterceptor('file'))
+	@UseInterceptors(FileInterceptor('file', multerConfig))
 	async uploadFile(@UploadedFile() file: Express.Multer.File) {
 		console.log('test', file)
 		return 'file upload'

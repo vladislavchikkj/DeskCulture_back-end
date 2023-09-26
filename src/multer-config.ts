@@ -3,8 +3,9 @@ import { extname } from 'path'
 
 export const multerConfig = {
 	storage: diskStorage({
-		destination: './uploads', // установить целевую директорию для загрузки файлов
+		destination: 'C:/Users/vladk/OneDrive/Рабочий стол/testfolder', // установить целевую директорию для загрузки файлов
 		filename: (req, file, cb) => {
+			console.log(req)
 			const fileExt = extname(file.originalname)
 			const randomName = Array(32)
 				.fill(null)

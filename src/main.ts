@@ -1,20 +1,23 @@
 import { NestFactory } from '@nestjs/core'
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger'
-import { Request, json } from 'express'
+import { json } from 'express'
 import { AppModule } from './app.module'
 import { PrismaService } from './prisma.service'
 
 async function bootstrap() {
 	const app = await NestFactory.create(AppModule)
-
+	app.enableCors()
 	// Middleware, сохраняющий `rawBody` наряду с обычным `body`.
-	app.use((req: Request, res, next) => {
-		// @ts-ignore
-		req.rawBody = ''
-		// @ts-ignore
-		req.on('data', chunk => (req.rawBody += chunk))
-		next()
-	})
+	// app.use((req: Request, res, next) => {
+	// 	console.log(req)
+	// 	// @ts-ignore
+	// 	req.rawBody = ''
+	// 	// @ts-ignore
+	// 	req.on('data', chunk => (req.rawBody += chunk))
+	// 	req.on('end', () => {
+	// 		next()
+	// 	})
+	// })
 	app.use(json())
 
 	// Документация Swagger
