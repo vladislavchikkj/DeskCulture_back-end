@@ -3,9 +3,8 @@ import { extname } from 'path'
 
 export const multerConfig = {
 	storage: diskStorage({
-		destination: 'C:/Users/vladk/OneDrive/Рабочий стол/testfolder', // установить целевую директорию для загрузки файлов
+		destination: './uploads', // установить целевую директорию для загрузки файлов
 		filename: (req, file, cb) => {
-			console.log(req)
 			const fileExt = extname(file.originalname)
 			const randomName = Array(32)
 				.fill(null)
@@ -13,15 +12,13 @@ export const multerConfig = {
 				.join('')
 			cb(null, `${randomName}${fileExt}`)
 		}
-	})
-	// fileFilter: (req, file, cb) => {
-	// 	console.log('Checking file:', file)
-	// 	if (!['image/jpeg', 'image/png'].includes(file.mimetype)) {
-	// 		//пропускать только файла с допустимыми MIME-типами
-	// 		cb(new Error('Invalid file type'), false)
-	// 	} else {
-	// 		cb(null, true)
-	// 	}
-	// },
-	// limits: { fileSize: 5 * 1024 * 1024 } // установить предельный размер файла: 2 MB
+	}),
+	fileFilter: (req, file, cb) => {
+		if (!['image/jpeg', 'image/png'].includes(file.mimetype)) {
+			cb(new Error('Invalid file type'), false)
+		} else {
+			cb(null, true)
+		}
+	},
+	limits: { fileSize: 5 * 1024 * 1024 } // установить предельный размер файла: 2 MB
 }

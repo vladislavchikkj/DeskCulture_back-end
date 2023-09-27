@@ -5,7 +5,10 @@ import { PrismaService } from 'src/prisma.service'
 import { productReturnObject } from 'src/product/return-product.object'
 import Stripe from 'stripe'
 import { OrderDto } from './order.dto'
+require('dotenv').config()
+
 const stripe = require('stripe')(process.env['SECRET_KEY'])
+
 const keyBuffer = process.env['ENCRYPTION_KEY']
 	? Buffer.from(process.env['ENCRYPTION_KEY'], 'hex')
 	: crypto.randomBytes(32)
@@ -25,17 +28,22 @@ function encrypt(text) {
 }
 
 function decrypt(text) {
-	let textParts = text.split(':')
-	let iv = Buffer.from(textParts.shift(), 'hex')
-	let encryptedText = Buffer.from(textParts.join(':'), 'hex')
-	let decipher = crypto.createDecipheriv(
-		'aes-256-cbc',
-		Buffer.from(ENCRYPTION_KEY),
-		iv
-	)
-	let decrypted = decipher.update(encryptedText)
-	decrypted = Buffer.concat([decrypted, decipher.final()])
-	return decrypted.toString()
+	try {
+		let textParts = text.split(':')
+		let iv = Buffer.from(textParts.shift(), 'hex')
+		let encryptedText = Buffer.from(textParts.join(':'), 'hex')
+		let decipher = crypto.createDecipheriv(
+			'aes-256-cbc',
+			Buffer.from(ENCRYPTION_KEY),
+			iv
+		)
+		let decrypted = decipher.update(encryptedText)
+		decrypted = Buffer.concat([decrypted, decipher.final()])
+		return decrypted.toString()
+	} catch (error) {
+		console.error(`Error decrypting data: ${error.message}`)
+		return text
+	}
 }
 @Injectable()
 export class OrderService {

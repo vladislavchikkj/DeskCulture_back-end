@@ -1,6 +1,8 @@
 import {
+	BadRequestException,
 	Body,
 	Controller,
+	Delete,
 	Get,
 	HttpCode,
 	Param,
@@ -44,5 +46,24 @@ export class UserController {
 		@Param('productId') productId: string
 	) {
 		return this.userService.toggleFavorite(id, +productId)
+	}
+
+	//admin only !!!
+
+	@Get()
+	@Auth()
+	async getAllUsers() {
+		return this.userService.findAllUsers()
+	}
+
+	@Auth()
+	@Delete(':id')
+	async deleteUser(@Param('id') id: string) {
+		const parsedId = parseInt(id)
+		if (!Number.isNaN(parsedId)) {
+			return this.userService.deleteUser(parsedId)
+		} else {
+			throw new BadRequestException(`Invalid id provided: '${id}'`)
+		}
 	}
 }

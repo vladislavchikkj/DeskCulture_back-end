@@ -33,7 +33,7 @@ export class ReviewService {
 		const createdReview = await this.prisma.review.create({
 			data: {
 				...dto,
-				imageUrl: imageFile?.filename ?? null,
+				imageUrl: imageFile ? `uploads/${imageFile.filename}` : null,
 				product: {
 					connect: {
 						id: productId

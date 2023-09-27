@@ -5,6 +5,7 @@ import {
 	HttpCode,
 	InternalServerErrorException,
 	Param,
+	ParseIntPipe,
 	Post,
 	UploadedFile,
 	UseInterceptors,
@@ -37,12 +38,12 @@ export class ReviewController {
 	async leaveReview(
 		@UploadedFile() file,
 		@CurrentUser('id') id: number,
-		@Body() dto: ReviewDto,
+		@Body('rating', ParseIntPipe) rating: number,
+		@Body() dto: Omit<ReviewDto, 'rating'>,
 		@Param('productId') productId: string
 	) {
 		try {
-			console.log('test', file)
-			return this.reviewService.create(id, dto, +productId, file)
+			return this.reviewService.create(id, { ...dto, rating }, +productId, file)
 		} catch (err) {
 			console.error(err)
 			throw new InternalServerErrorException('Failed to process the request')
@@ -57,7 +58,6 @@ export class ReviewController {
 	@Post('upload')
 	@UseInterceptors(FileInterceptor('file', multerConfig))
 	async uploadFile(@UploadedFile() file: Express.Multer.File) {
-		console.log('test', file)
 		return 'file upload'
 	}
 }
