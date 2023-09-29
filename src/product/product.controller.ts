@@ -1,4 +1,5 @@
 import {
+	BadRequestException,
 	Body,
 	Controller,
 	Delete,
@@ -8,10 +9,14 @@ import {
 	Post,
 	Put,
 	Query,
+	UploadedFiles,
+	UseInterceptors,
 	UsePipes,
 	ValidationPipe
 } from '@nestjs/common'
+import { FilesInterceptor } from '@nestjs/platform-express'
 import { Auth } from 'src/auth/decorator/auth.decorator'
+import { multerConfig } from 'src/multer-config'
 import { GetAllProductDto } from './dto/get-all.product.dto'
 import { ProductDto } from './dto/product.dto'
 import { ProductService } from './product.service'
@@ -55,8 +60,24 @@ export class ProductController {
 	@HttpCode(200)
 	@Auth('admin')
 	@Post()
-	async createProduct() {
-		return this.productService.create()
+	@UseInterceptors(FilesInterceptor('images', 20, multerConfig)) // Позволяет загружать до 20 изображений
+	async createProduct(
+		@UploadedFiles() files: Express.Multer.File[],
+		@Body() createProductDto: ProductDto
+	) {
+		if (!files || files.length === 0) {
+			throw new BadRequestException('Images are required')
+		}
+
+		const parsedCategoryId = Number(createProductDto.categoryId)
+
+		if (isNaN(parsedCategoryId)) {
+			throw new BadRequestException('Category ID must be a number')
+		}
+
+		createProductDto.categoryId = parsedCategoryId
+
+		return this.productService.create(createProductDto, files)
 	}
 
 	@UsePipes(new ValidationPipe())
