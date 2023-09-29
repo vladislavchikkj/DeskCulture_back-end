@@ -6,6 +6,7 @@ import {
 	Get,
 	HttpCode,
 	Param,
+	ParseIntPipe,
 	Post,
 	Put,
 	Query,
@@ -52,46 +53,41 @@ export class ProductController {
 		return this.productService.byCategory(categorySlug)
 	}
 	@Get('by-setups/:id')
-	async getProductbySetupsId(@Param('id') id: number) {
-		return this.productService.bySetupsId(+id)
+	async getProductbySetupsId(@Param('id', new ParseIntPipe()) id: number) {
+		return this.productService.bySetupsId(id)
 	}
 
 	@UsePipes(new ValidationPipe())
 	@HttpCode(200)
 	@Auth('admin')
 	@Post()
-	@UseInterceptors(FilesInterceptor('images', 20, multerConfig)) // Позволяет загружать до 20 изображений
+	@UseInterceptors(FilesInterceptor('image', 10, multerConfig))
 	async createProduct(
-		@UploadedFiles() files: Express.Multer.File[],
-		@Body() createProductDto: ProductDto
+		@UploadedFiles() files,
+		@Body() dto: Omit<ProductDto, 'images'>
 	) {
 		if (!files || files.length === 0) {
-			throw new BadRequestException('Images are required')
+			throw new BadRequestException('At least one image must be uploaded.')
 		}
-
-		const parsedCategoryId = Number(createProductDto.categoryId)
-
-		if (isNaN(parsedCategoryId)) {
-			throw new BadRequestException('Category ID must be a number')
-		}
-
-		createProductDto.categoryId = parsedCategoryId
-
-		return this.productService.create(createProductDto, files)
+		return this.productService.create(dto, files)
 	}
 
 	@UsePipes(new ValidationPipe())
-	@HttpCode(200)
 	@Put(':id')
 	@Auth('admin')
-	async updateProduct(@Param('id') id: string, @Body() dto: ProductDto) {
-		return this.productService.update(+id, dto)
+	@UseInterceptors(FilesInterceptor('image', 10, multerConfig))
+	async updateProduct(
+		@Param('id', ParseIntPipe) id: number,
+		@Body() dto: ProductDto,
+		@UploadedFiles() files
+	) {
+		return this.productService.update(id, dto, files)
 	}
 
 	@HttpCode(200)
 	@Delete(':id')
 	@Auth('admin')
-	async deleteProduct(@Param('id') id: string) {
-		return this.productService.delete(+id)
+	async deleteProduct(@Param('id', ParseIntPipe) id: number) {
+		return this.productService.delete(id)
 	}
 }

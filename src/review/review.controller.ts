@@ -54,10 +54,4 @@ export class ReviewController {
 	async getAverageByProduct(@Param('productId') productId: string) {
 		return this.reviewService.getAverageValueByProductId(+productId)
 	}
-
-	@Post('upload')
-	@UseInterceptors(FileInterceptor('file', multerConfig))
-	async uploadFile(@UploadedFile() file: Express.Multer.File) {
-		return 'file upload'
-	}
 }

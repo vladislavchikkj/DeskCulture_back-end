@@ -226,20 +226,38 @@ export class ProductService {
 		return products
 	}
 
-	async create() {
-		const product = await this.prisma.product.create({
+	async create(dto: ProductDto, files: Express.Multer.File[]) {
+		const { description, price, name, categoryId, setupsId } = dto
+		const serverAddress = 'http://localhost:4200/'
+		const parsedCategoryId = Number(categoryId)
+		const parsedSetupsId = Number(setupsId)
+		const parsedPrice = Number(price)
+
+		const images: string[] = files.map(file => serverAddress + file.path)
+
+		await this.categoryService.byId(parsedCategoryId)
+
+		return this.prisma.product.create({
 			data: {
-				description: '',
-				name: '',
-				price: 0,
-				slug: ''
+				description,
+				name,
+				price: parsedPrice,
+				slug: generateSlug(name),
+				images,
+				categoryId: parsedCategoryId,
+				setupsId: parsedSetupsId
 			}
 		})
-		return product.id
 	}
 
-	async update(id: number, dto: ProductDto) {
-		const { description, images, price, name, categoryId } = dto
+	async update(id: number, dto: ProductDto, files: Express.Multer.File[]) {
+		const { description, price, name, categoryId, setupsId } = dto
+		const serverAddress = 'http://localhost:4200/'
+		const parsedCategoryId = Number(categoryId)
+		const parsedSetupsId = Number(setupsId)
+		const parsedPrice = Number(price)
+
+		const images: string[] = files.map(file => serverAddress + file.path)
 
 		await this.categoryService.byId(categoryId)
 
@@ -247,13 +265,18 @@ export class ProductService {
 			where: { id },
 			data: {
 				description,
-				images,
-				price,
+				price: parsedPrice,
 				name,
 				slug: generateSlug(name),
+				images,
 				category: {
 					connect: {
-						id: categoryId
+						id: parsedCategoryId
+					}
+				},
+				setups: {
+					connect: {
+						id: parsedSetupsId
 					}
 				}
 			}
