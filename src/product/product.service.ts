@@ -256,13 +256,14 @@ export class ProductService {
 		const parsedCategoryId = Number(categoryId)
 		const parsedSetupsId = Number(setupsId)
 		const parsedPrice = Number(price)
+		const parsedId = Number(id)
 
 		const images: string[] = files.map(file => serverAddress + file.path)
 
-		await this.categoryService.byId(categoryId)
+		await this.categoryService.byId(parsedCategoryId)
 
 		return this.prisma.product.update({
-			where: { id },
+			where: { id: parsedId },
 			data: {
 				description,
 				price: parsedPrice,
@@ -286,6 +287,10 @@ export class ProductService {
 		// Сначала удаляем связанные отзывы продукта
 		await this.prisma.review.deleteMany({
 			where: { productId: id } // Удалить все отзывы с совпадающим productId
+		})
+
+		await this.prisma.orderItem.deleteMany({
+			where: { productId: id }
 		})
 
 		// Затем удаляем сам продукт

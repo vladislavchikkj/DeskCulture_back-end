@@ -1,6 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common'
 import { PrismaService } from 'src/prisma.service'
-import { generateSlug } from 'src/utils/generate-slug'
 import { CategoryDto } from './category.dto'
 import { returnCategoryObject } from './return-category.object'
 
@@ -34,23 +33,29 @@ export class CategoryService {
 			select: returnCategoryObject
 		})
 	}
-	async create() {
+	async create(dto: CategoryDto, imageFile?: Express.Multer.File) {
 		return this.prisma.category.create({
 			data: {
-				name: '',
-				slug: '',
-				image: '',
-				description: ''
+				name: dto.name,
+				slug: dto.slug,
+				image: imageFile
+					? `${process.env['SERVER_URL']}/uploads/${imageFile.filename}`
+					: null,
+				description: dto.description
 			}
 		})
 	}
 
-	async update(id: number, dto: CategoryDto) {
+	async update(id: number, dto: CategoryDto, imageFile?: Express.Multer.File) {
 		return this.prisma.category.update({
 			where: { id },
 			data: {
 				name: dto.name,
-				slug: generateSlug(dto.name)
+				slug: dto.slug,
+				image: imageFile
+					? `${process.env['SERVER_URL']}/uploads/${imageFile.filename}`
+					: null,
+				description: dto.description
 			}
 		})
 	}

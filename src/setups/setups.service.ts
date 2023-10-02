@@ -35,21 +35,27 @@ export class SetupsService {
 
 		return setup
 	}
-	async create() {
+	async create(dto: SetupsDto, imageFile?: Express.Multer.File) {
 		return this.prisma.setups.create({
 			data: {
-				name: '',
-				description: '',
-				image: ''
+				name: dto.name,
+				image: imageFile
+					? `${process.env['SERVER_URL']}/uploads/${imageFile.filename}`
+					: null,
+				description: dto.description
 			}
 		})
 	}
 
-	async update(id: number, dto: SetupsDto) {
+	async update(id: number, dto: SetupsDto, imageFile?: Express.Multer.File) {
 		return this.prisma.setups.update({
 			where: { id },
 			data: {
-				name: dto.name
+				name: dto.name,
+				image: imageFile
+					? `${process.env['SERVER_URL']}/uploads/${imageFile.filename}`
+					: null,
+				description: dto.description
 			}
 		})
 	}

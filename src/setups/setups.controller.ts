@@ -5,13 +5,18 @@ import {
 	Get,
 	HttpCode,
 	Param,
+	ParseIntPipe,
 	Post,
 	Put,
+	UploadedFile,
+	UseInterceptors,
 	UsePipes,
 	ValidationPipe
 } from '@nestjs/common'
+import { FileInterceptor } from '@nestjs/platform-express'
 import { Product } from '@prisma/client'
 import { Auth } from 'src/auth/decorator/auth.decorator'
+import { multerConfig } from 'src/multer-config'
 import { SetupsDto } from './setups.dto'
 import { SetupsService } from './setups.service'
 
@@ -28,19 +33,25 @@ export class SetupsController {
 		return this.setupsService.byId(+id)
 	}
 
+	@UsePipes(new ValidationPipe())
 	@HttpCode(200)
-	@Auth()
+	@Auth('admin')
 	@Post()
-	async create() {
-		return this.setupsService.create()
+	@UseInterceptors(FileInterceptor('image', multerConfig))
+	async create(@UploadedFile() file, @Body() dto: Omit<SetupsDto, 'images'>) {
+		return this.setupsService.create(dto, file)
 	}
 
 	@UsePipes(new ValidationPipe())
-	@Auth()
-	@HttpCode(200)
 	@Put(':id')
-	async update(@Param('id') id: string, @Body() dto: SetupsDto) {
-		return this.setupsService.update(+id, dto)
+	@Auth('admin')
+	@UseInterceptors(FileInterceptor('image', multerConfig))
+	async update(
+		@Param('id', ParseIntPipe) id: number,
+		@Body() dto: Omit<SetupsDto, 'images'>,
+		@UploadedFile() file
+	) {
+		return this.setupsService.update(id, dto, file)
 	}
 
 	@HttpCode(200)

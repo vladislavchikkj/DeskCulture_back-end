@@ -78,9 +78,12 @@ export class ProductController {
 	@UseInterceptors(FilesInterceptor('image', 10, multerConfig))
 	async updateProduct(
 		@Param('id', ParseIntPipe) id: number,
-		@Body() dto: ProductDto,
+		@Body() dto: Omit<ProductDto, 'images'>,
 		@UploadedFiles() files
 	) {
+		if (!files || files.length === 0) {
+			throw new BadRequestException('At least one image must be uploaded.')
+		}
 		return this.productService.update(id, dto, files)
 	}
 

@@ -5,12 +5,17 @@ import {
 	Get,
 	HttpCode,
 	Param,
+	ParseIntPipe,
 	Post,
 	Put,
+	UploadedFile,
+	UseInterceptors,
 	UsePipes,
 	ValidationPipe
 } from '@nestjs/common'
+import { FileInterceptor } from '@nestjs/platform-express'
 import { Auth } from 'src/auth/decorator/auth.decorator'
+import { multerConfig } from 'src/multer-config'
 import { CategoryDto } from './category.dto'
 import { CategoryService } from './category.service'
 
@@ -32,19 +37,25 @@ export class CategoryController {
 		return this.categoryService.byId(+id)
 	}
 
+	@UsePipes(new ValidationPipe())
 	@HttpCode(200)
 	@Auth('admin')
 	@Post()
-	async create() {
-		return this.categoryService.create()
+	@UseInterceptors(FileInterceptor('image', multerConfig))
+	async create(@UploadedFile() file, @Body() dto: Omit<CategoryDto, 'images'>) {
+		return this.categoryService.create(dto, file)
 	}
 
 	@UsePipes(new ValidationPipe())
-	@Auth('admin')
-	@HttpCode(200)
 	@Put(':id')
-	async update(@Param('id') id: string, @Body() dto: CategoryDto) {
-		return this.categoryService.update(+id, dto)
+	@Auth('admin')
+	@UseInterceptors(FileInterceptor('image', multerConfig))
+	async update(
+		@Param('id', ParseIntPipe) id: number,
+		@Body() dto: Omit<CategoryDto, 'images'>,
+		@UploadedFile() file
+	) {
+		return this.categoryService.update(id, dto, file)
 	}
 
 	@HttpCode(200)
