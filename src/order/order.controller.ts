@@ -20,7 +20,7 @@ export class OrderController {
 
 	@Get()
 	@Auth('admin')
-	getAll(@CurrentUser('id') userId: number) {
+	getAll() {
 		return this.orderService.getAll()
 	}
 	@Get('by-user')
