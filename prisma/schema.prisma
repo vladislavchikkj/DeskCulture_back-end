@@ -21,6 +21,9 @@ model User {
     avatarPath String   @default("/uploads/default-avatar.png") @map("vatar_path")
     phone      String   @default("")
 
+    resetPasswordToken  String?   @map("reset_password_token")
+    resetPasswordExpire DateTime? @map("reset_password_expire")
+
     orders    Order[]
     reviews   Review[]
     favorites Product[]

@@ -7,19 +7,29 @@ import {
 import { JwtService } from '@nestjs/jwt'
 import { User } from '@prisma/client'
 import { hash, verify } from 'argon2'
+import { randomBytes } from 'crypto'
+import * as nodemailer from 'nodemailer'
 import { PrismaService } from 'src/prisma.service'
 import { UserService } from 'src/user/user.service'
-import { ChangePasswordDto } from './change-password/change-password.dto'
 import { AuthDto } from './dto/auth.dto'
-import { ForgotPasswordDto } from './dto/forgot-password.dto'
+import { ChangePasswordDto } from './dto/change-password.dto'
 
 @Injectable()
 export class AuthService {
+	private transporter
 	constructor(
 		private prisma: PrismaService,
 		private jwt: JwtService,
 		private userService: UserService
-	) {}
+	) {
+		this.transporter = nodemailer.createTransport({
+			service: 'hotmail',
+			auth: {
+				user: process.env.EMAIL_USERNAME,
+				pass: process.env.EMAIL_PASSWORD
+			}
+		})
+	}
 
 	async login(dto: AuthDto) {
 		const user = await this.validateUser(dto)
@@ -88,7 +98,7 @@ export class AuthService {
 			expiresIn: '1h'
 		})
 		const refreshToken = this.jwt.sign(data, {
-			expiresIn: '7d'
+			expiresIn: '1d'
 		})
 		return { accessToken, refreshToken }
 	}
@@ -119,38 +129,94 @@ export class AuthService {
 		return !!existingUser
 	}
 
-	// CHANGE PASSWORD
-
-	private async forgotPassword(
-		forgotPasswordDto: ForgotPasswordDto
-	): Promise<void> {
-		const user = this.userService.findByEmail(forgotPasswordDto.email)
-
-		if (!user) {
-			throw new BadRequestException('Invalid email')
-		}
-	}
-
-	async changePassword(userId: number, changePasswordDto: ChangePasswordDto) {
-		const user = await this.userService.byId(userId)
-
-		if (!user) {
-			throw new NotFoundException('Пользователь не найден')
-		}
-
-		const isValid = await verify(user.password, changePasswordDto.oldPassword)
-
-		if (!isValid) {
-			throw new UnauthorizedException('Неверный старый пароль')
-		}
-
-		const newPasswordHash = await hash(changePasswordDto.newPassword)
-
-		await this.prisma.user.update({
-			where: { id: userId },
-			data: { password: newPasswordHash }
+	async changePassword(userId: number, dto: ChangePasswordDto) {
+		const user = await this.prisma.user.findUnique({
+			where: { id: userId }
 		})
 
-		return true
+		if (!user) throw new NotFoundException(`User not found`)
+
+		const isValid = await verify(user.password, dto.oldPassword)
+
+		if (!isValid) throw new UnauthorizedException('Invalid password')
+
+		const updatedUser = await this.prisma.user.update({
+			where: { id: userId },
+			data: {
+				password: await hash(dto.newPassword)
+			}
+		})
+
+		return this.returnUserField(updatedUser)
+	}
+
+	// forgot / reset password
+
+	async forgotPassword(email: string): Promise<void> {
+		const user = await this.prisma.user.findUnique({
+			where: { email }
+		})
+
+		// Пользователь не найден
+		if (!user) {
+			return
+		}
+
+		const token = randomBytes(20).toString('hex')
+
+		// Сохраняем токен в модели User
+		await this.prisma.user.update({
+			where: { email: user.email },
+			data: {
+				resetPasswordToken: token,
+				resetPasswordExpire: new Date(Date.now() + 15 * 60 * 1000) // Токен истекает через 15 минут
+			}
+		})
+		const DELIMITER = '<<>>'
+		const mailOptions = {
+			from: process.env.EMAIL_USERNAME,
+			to: user.email,
+			subject: 'Password Reset',
+			text: `Вы получили это письмо, потому что вы (или кто-то еще) запросили сброс пароля для вашего аккаунта.\n\n
+					Пожалуйста, перейдите по следующему URL или скопируйте его в адресную строку вашего браузера, чтобы завершить процесс:\n\n
+					http://localhost:3000/auth/reset/${encodeURIComponent(
+						user.email + DELIMITER + token
+					)}\n\n
+					Если вы не запрашивали сброс пароля, просто проигнорируйте это письмо и ваш пароль останется прежним.\n`
+		}
+
+		this.transporter.sendMail(mailOptions, function (error, info) {
+			if (error) {
+				console.log(error)
+			} else {
+				console.log('Письмо отправлено: ' + info.response)
+			}
+		})
+	}
+
+	async resetPassword(email: string, token: string, newPassword: string) {
+		const user = await this.prisma.user.findUnique({
+			where: { email }
+		})
+
+		if (!user) throw new NotFoundException('No such user')
+		if (!user.resetPasswordToken || !user.resetPasswordExpire) {
+			throw new BadRequestException('Reset token is invalid')
+		}
+		if (user.resetPasswordToken !== token) throw new UnauthorizedException()
+		if (new Date() > user.resetPasswordExpire)
+			throw new BadRequestException('Reset token expired')
+
+		// Reset password
+		const hashedNewPassword = await hash(newPassword)
+		await this.prisma.user.update({
+			where: { email },
+			data: {
+				resetPasswordToken: null,
+				resetPasswordExpire: null,
+				password: hashedNewPassword
+			}
+		})
+		return { message: 'Password successfully reset.' }
 	}
 }
