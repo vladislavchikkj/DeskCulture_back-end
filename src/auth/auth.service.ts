@@ -146,8 +146,10 @@ export class AuthService {
 				password: await hash(dto.newPassword)
 			}
 		})
-
-		return this.returnUserField(updatedUser)
+		return {
+			message: 'Password successfully changed.',
+			user: this.returnUserField(updatedUser)
+		}
 	}
 
 	// forgot / reset password

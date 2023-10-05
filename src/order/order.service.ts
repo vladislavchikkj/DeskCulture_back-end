@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common'
 import { EnumOrderStatus } from '@prisma/client'
 import crypto from 'crypto'
+import * as nodemailer from 'nodemailer'
 import { PrismaService } from 'src/prisma.service'
 import { productReturnObject } from 'src/product/return-product.object'
 import Stripe from 'stripe'
@@ -47,10 +48,19 @@ function decrypt(text) {
 }
 @Injectable()
 export class OrderService {
+	private transporter
 	private readonly stripe = new Stripe(process.env['SECRET_KEY'] || '', {
 		apiVersion: '2023-08-16'
 	})
-	constructor(private prisma: PrismaService) {}
+	constructor(private prisma: PrismaService) {
+		this.transporter = nodemailer.createTransport({
+			service: 'hotmail',
+			auth: {
+				user: process.env.EMAIL_USERNAME,
+				pass: process.env.EMAIL_PASSWORD
+			}
+		})
+	}
 
 	async getAll() {
 		const orders = await this.prisma.order.findMany({
@@ -212,22 +222,100 @@ export class OrderService {
 		})
 		return session
 	}
+	async sendOrderEmail(userEmail: string, orderDetails: any) {
+		const decryptedOrderDetails = {
+			...orderDetails,
+			firstName: decrypt(orderDetails.firstName),
+			lastName: decrypt(orderDetails.lastName),
+			country: decrypt(orderDetails.country),
+			state: decrypt(orderDetails.state),
+			city: decrypt(orderDetails.city),
+			postCode: decrypt(orderDetails.postCode),
+			street: decrypt(orderDetails.street),
+			house: decrypt(orderDetails.house),
+			phoneCode: decrypt(orderDetails.phoneCode),
+			phone: decrypt(orderDetails.phone),
+			email: decrypt(orderDetails.email)
+		}
+
+		// Generating list of items
+		let itemHtml = `<li><b>Purchased Items:</b><ul>`
+		orderDetails.items.forEach(item => {
+			itemHtml += `<li>${item.product.name} (Quantity: ${item.quantity})</li>`
+		})
+		itemHtml += '</ul></li>'
+
+		const mailOptions = {
+			from: process.env.EMAIL_USERNAME,
+			to: userEmail,
+			subject: 'Your order has been successfully paid',
+			html: `
+				<div style="font-family: 'Roboto', sans-serif; color: rgba(0, 0, 0, 0.87); max-width: 500px; margin: auto;">
+					<h2 style="background-color: #a08750; color: #fff; margin: 0; padding: 16px;">Order Successfully Paid</h2>
+					<div style="padding: 16px; border: 1px solid rgba(0, 0, 0, 0.12);">
+						<strong>Hello ${decryptedOrderDetails.firstName} ${decryptedOrderDetails.lastName},</strong>
+						<p style="border-bottom:1px solid #a08750;padding-bottom: 10px;">Your order has been successfully processed and paid. Here are the details of your order:</p>
+						<ul style="list-style-type: none; padding: 0; border-bottom: 1px solid #a08750;padding-bottom: 10px;">
+							<li><strong>Country:</strong> ${decryptedOrderDetails.country}</li>
+							<li><strong>State:</strong> ${decryptedOrderDetails.state}</li>
+							<li><strong>City:</strong> ${decryptedOrderDetails.city}</li>
+							<li><strong>Postal Code:</strong> ${decryptedOrderDetails.postCode}</li>
+							<li><strong>Street:</strong> ${decryptedOrderDetails.street}</li>
+							<li><strong>House:</strong> ${decryptedOrderDetails.house}</li>
+							<li><strong>Phone:</strong> ${decryptedOrderDetails.phoneCode} ${decryptedOrderDetails.phone}</li>
+							<li><strong>Email:</strong> ${decryptedOrderDetails.email}</li>
+							<li>
+								<strong>Items:</strong> 
+								${itemHtml}
+							</li>
+							<li><strong>Total:</strong> ${orderDetails.total}$</li>
+						</ul>
+						<p>If there are any issues or if you have any questions, please contact us.</p>
+						<p>Best Regards, <strong>DeskCulture</strong>
+					</div>
+				</div>
+			`
+		}
+
+		this.transporter.sendMail(mailOptions, function (error, info) {
+			if (error) {
+				console.error('Error sending mail: ' + error)
+			} else {
+				console.log('Email sent: ' + info.response)
+			}
+		})
+	}
+
 	async handleStripeWebhook(event: Stripe.Event) {
 		switch (event.type) {
 			case 'checkout.session.completed':
 				const session = event.data.object as Stripe.Checkout.Session
 				const orderId = session.metadata.orderId
 				const paymentIntentId = session.payment_intent as string
-				const customerEmail = session.customer_email as string
+				const customerEmail = session.customer_details.email
 				if (orderId && paymentIntentId) {
 					await this.prisma.order.update({
 						where: { id: parseInt(orderId, 10) },
 						data: {
 							status: EnumOrderStatus.PAYED,
 							paymentIntentId: paymentIntentId,
-							email: customerEmail
+							email: encrypt(customerEmail)
 						}
 					})
+
+					const order = await this.prisma.order.findUnique({
+						where: { id: parseInt(orderId, 10) },
+						include: {
+							items: {
+								include: {
+									product: true
+								}
+							}
+						}
+					})
+
+					await this.sendOrderEmail(customerEmail, order)
+
 					return { statusCode: 200, message: 'Webhook handled successfully' }
 				} else {
 					console.error(
