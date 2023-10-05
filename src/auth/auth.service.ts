@@ -11,6 +11,7 @@ import { randomBytes } from 'crypto'
 import * as nodemailer from 'nodemailer'
 import { PrismaService } from 'src/prisma.service'
 import { UserService } from 'src/user/user.service'
+import { EncryptionUtility } from 'src/utils/crypto.utility'
 import { AuthDto } from './dto/auth.dto'
 import { ChangePasswordDto } from './dto/change-password.dto'
 
@@ -62,22 +63,43 @@ export class AuthService {
 				email: dto.email
 			}
 		})
+
 		if (userWithEmail) {
-			throw new BadRequestException(`User with this email already exists`)
+			throw new BadRequestException('User with this email already exists')
 		}
 
 		const userWithName = await this.userExistsWithName(dto.name)
 		if (userWithName) {
-			throw new BadRequestException(`User with this name already exists`)
+			throw new BadRequestException('User with this name already exists')
 		}
 
 		const user = await this.prisma.user.create({
 			data: {
 				email: dto.email,
-				name: dto.name, // Use the provided name from DTO
+				name: dto.name,
 				password: await hash(dto.password)
 			}
 		})
+
+		// Находим все заказы по этому email и привязываем к пользователю
+		const encryptedEmail = EncryptionUtility.encrypt(dto.email)
+		const orders = await this.prisma.order.findMany({
+			where: {
+				email: encryptedEmail,
+				user: null
+			}
+		})
+
+		for (let order of orders) {
+			await this.prisma.order.update({
+				where: { id: order.id },
+				data: {
+					user: {
+						connect: { id: user.id }
+					}
+				}
+			})
+		}
 
 		const tokens = await this.issueToken(user.id)
 

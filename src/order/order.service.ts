@@ -1,51 +1,16 @@
 import { Injectable } from '@nestjs/common'
 import { EnumOrderStatus } from '@prisma/client'
-import crypto from 'crypto'
 import * as nodemailer from 'nodemailer'
 import { PrismaService } from 'src/prisma.service'
 import { productReturnObject } from 'src/product/return-product.object'
+import { EncryptionUtility } from 'src/utils/crypto.utility'
 import Stripe from 'stripe'
+
 import { OrderDto } from './order.dto'
 require('dotenv').config()
 
 const stripe = require('stripe')(process.env['SECRET_KEY'])
 
-const keyBuffer = process.env['ENCRYPTION_KEY']
-	? Buffer.from(process.env['ENCRYPTION_KEY'], 'hex')
-	: crypto.randomBytes(32)
-const ENCRYPTION_KEY = keyBuffer
-const IV_LENGTH = 16
-
-function encrypt(text) {
-	let iv = crypto.randomBytes(IV_LENGTH)
-	let cipher = crypto.createCipheriv(
-		'aes-256-cbc',
-		Buffer.from(ENCRYPTION_KEY),
-		iv
-	)
-	let encrypted = cipher.update(text)
-	encrypted = Buffer.concat([encrypted, cipher.final()])
-	return iv.toString('hex') + ':' + encrypted.toString('hex')
-}
-
-function decrypt(text) {
-	try {
-		let textParts = text.split(':')
-		let iv = Buffer.from(textParts.shift(), 'hex')
-		let encryptedText = Buffer.from(textParts.join(':'), 'hex')
-		let decipher = crypto.createDecipheriv(
-			'aes-256-cbc',
-			Buffer.from(ENCRYPTION_KEY),
-			iv
-		)
-		let decrypted = decipher.update(encryptedText)
-		decrypted = Buffer.concat([decrypted, decipher.final()])
-		return decrypted.toString()
-	} catch (error) {
-		console.error(`Error decrypting data: ${error.message}`)
-		return text
-	}
-}
 @Injectable()
 export class OrderService {
 	private transporter
@@ -76,17 +41,17 @@ export class OrderService {
 		})
 
 		orders.forEach(order => {
-			order.firstName = decrypt(order.firstName)
-			order.lastName = decrypt(order.lastName)
-			order.country = decrypt(order.country)
-			order.state = decrypt(order.state)
-			order.city = decrypt(order.city)
-			order.postCode = decrypt(order.postCode)
-			order.street = decrypt(order.street)
-			order.house = decrypt(order.house)
-			order.phoneCode = decrypt(order.phoneCode)
-			order.phone = decrypt(order.phone)
-			order.email = decrypt(order.email)
+			order.firstName = EncryptionUtility.decrypt(order.firstName)
+			order.lastName = EncryptionUtility.decrypt(order.lastName)
+			order.country = EncryptionUtility.decrypt(order.country)
+			order.state = EncryptionUtility.decrypt(order.state)
+			order.city = EncryptionUtility.decrypt(order.city)
+			order.postCode = EncryptionUtility.decrypt(order.postCode)
+			order.street = EncryptionUtility.decrypt(order.street)
+			order.house = EncryptionUtility.decrypt(order.house)
+			order.phoneCode = EncryptionUtility.decrypt(order.phoneCode)
+			order.phone = EncryptionUtility.decrypt(order.phone)
+			order.email = EncryptionUtility.decrypt(order.email)
 		})
 		return orders
 	}
@@ -108,17 +73,17 @@ export class OrderService {
 		})
 
 		orders.forEach(order => {
-			order.firstName = decrypt(order.firstName)
-			order.lastName = decrypt(order.lastName)
-			order.country = decrypt(order.country)
-			order.state = decrypt(order.state)
-			order.city = decrypt(order.city)
-			order.postCode = decrypt(order.postCode)
-			order.street = decrypt(order.street)
-			order.house = decrypt(order.house)
-			order.phoneCode = decrypt(order.phoneCode)
-			order.phone = decrypt(order.phone)
-			order.email = decrypt(order.email)
+			order.firstName = EncryptionUtility.decrypt(order.firstName)
+			order.lastName = EncryptionUtility.decrypt(order.lastName)
+			order.country = EncryptionUtility.decrypt(order.country)
+			order.state = EncryptionUtility.decrypt(order.state)
+			order.city = EncryptionUtility.decrypt(order.city)
+			order.postCode = EncryptionUtility.decrypt(order.postCode)
+			order.street = EncryptionUtility.decrypt(order.street)
+			order.house = EncryptionUtility.decrypt(order.house)
+			order.phoneCode = EncryptionUtility.decrypt(order.phoneCode)
+			order.phone = EncryptionUtility.decrypt(order.phone)
+			order.email = EncryptionUtility.decrypt(order.email)
 		})
 		return orders
 	}
@@ -153,17 +118,17 @@ export class OrderService {
 			items: {
 				create: dto.items
 			},
-			firstName: encrypt(dto.firstName),
-			lastName: encrypt(dto.lastName),
-			country: encrypt(dto.country),
-			state: encrypt(dto.state),
-			city: encrypt(dto.city),
-			postCode: encrypt(dto.postCode),
-			street: encrypt(dto.street),
-			house: encrypt(dto.house),
-			phoneCode: encrypt(dto.phoneCode),
-			phone: encrypt(dto.phone),
-			email: encrypt(dto.email)
+			firstName: EncryptionUtility.encrypt(dto.firstName),
+			lastName: EncryptionUtility.encrypt(dto.lastName),
+			country: EncryptionUtility.encrypt(dto.country),
+			state: EncryptionUtility.encrypt(dto.state),
+			city: EncryptionUtility.encrypt(dto.city),
+			postCode: EncryptionUtility.encrypt(dto.postCode),
+			street: EncryptionUtility.encrypt(dto.street),
+			house: EncryptionUtility.encrypt(dto.house),
+			phoneCode: EncryptionUtility.encrypt(dto.phoneCode),
+			phone: EncryptionUtility.encrypt(dto.phone),
+			email: EncryptionUtility.encrypt(dto.email)
 		}
 
 		if (userId) {
@@ -202,8 +167,6 @@ export class OrderService {
 				quantity: item.quantity
 			}
 		})
-
-		// Создаем Stripe Checkout Session
 		const session = await this.stripe.checkout.sessions.create({
 			payment_method_types: ['card'],
 			line_items: line_items,
@@ -225,17 +188,17 @@ export class OrderService {
 	async sendOrderEmail(userEmail: string, orderDetails: any) {
 		const decryptedOrderDetails = {
 			...orderDetails,
-			firstName: decrypt(orderDetails.firstName),
-			lastName: decrypt(orderDetails.lastName),
-			country: decrypt(orderDetails.country),
-			state: decrypt(orderDetails.state),
-			city: decrypt(orderDetails.city),
-			postCode: decrypt(orderDetails.postCode),
-			street: decrypt(orderDetails.street),
-			house: decrypt(orderDetails.house),
-			phoneCode: decrypt(orderDetails.phoneCode),
-			phone: decrypt(orderDetails.phone),
-			email: decrypt(orderDetails.email)
+			firstName: EncryptionUtility.decrypt(orderDetails.firstName),
+			lastName: EncryptionUtility.decrypt(orderDetails.lastName),
+			country: EncryptionUtility.decrypt(orderDetails.country),
+			state: EncryptionUtility.decrypt(orderDetails.state),
+			city: EncryptionUtility.decrypt(orderDetails.city),
+			postCode: EncryptionUtility.decrypt(orderDetails.postCode),
+			street: EncryptionUtility.decrypt(orderDetails.street),
+			house: EncryptionUtility.decrypt(orderDetails.house),
+			phoneCode: EncryptionUtility.decrypt(orderDetails.phoneCode),
+			phone: EncryptionUtility.decrypt(orderDetails.phone),
+			email: EncryptionUtility.decrypt(orderDetails.email)
 		}
 
 		// Generating list of items
@@ -250,30 +213,30 @@ export class OrderService {
 			to: userEmail,
 			subject: 'Your order has been successfully paid',
 			html: `
-				<div style="font-family: 'Roboto', sans-serif; color: rgba(0, 0, 0, 0.87); max-width: 500px; margin: auto;">
-					<h2 style="background-color: #a08750; color: #fff; margin: 0; padding: 16px;">Order Successfully Paid</h2>
-					<div style="padding: 16px; border: 1px solid rgba(0, 0, 0, 0.12);">
-						<strong>Hello ${decryptedOrderDetails.firstName} ${decryptedOrderDetails.lastName},</strong>
-						<p style="border-bottom:1px solid #a08750;padding-bottom: 10px;">Your order has been successfully processed and paid. Here are the details of your order:</p>
-						<ul style="list-style-type: none; padding: 0; border-bottom: 1px solid #a08750;padding-bottom: 10px;">
-							<li><strong>Country:</strong> ${decryptedOrderDetails.country}</li>
-							<li><strong>State:</strong> ${decryptedOrderDetails.state}</li>
-							<li><strong>City:</strong> ${decryptedOrderDetails.city}</li>
-							<li><strong>Postal Code:</strong> ${decryptedOrderDetails.postCode}</li>
-							<li><strong>Street:</strong> ${decryptedOrderDetails.street}</li>
-							<li><strong>House:</strong> ${decryptedOrderDetails.house}</li>
-							<li><strong>Phone:</strong> ${decryptedOrderDetails.phoneCode} ${decryptedOrderDetails.phone}</li>
-							<li><strong>Email:</strong> ${decryptedOrderDetails.email}</li>
-							<li>
-								<strong>Items:</strong> 
-								${itemHtml}
-							</li>
-							<li><strong>Total:</strong> ${orderDetails.total}$</li>
-						</ul>
-						<p>If there are any issues or if you have any questions, please contact us.</p>
-						<p>Best Regards, <strong>DeskCulture</strong>
-					</div>
-				</div>
+			<div style="font-family: 'Roboto', sans-serif; color: rgba(0, 0, 0, 0.87); max-width: 500px; margin: auto;">
+			<h2 style="background-color: #a08750; color: #fff; margin: 0; padding: 16px;">Order Successfully Paid</h2>
+			<div style="padding: 16px; border: 1px solid rgba(0, 0, 0, 0.12);">
+				<strong>Hello ${decryptedOrderDetails.firstName} ${decryptedOrderDetails.lastName},</strong>
+				<p style="border-bottom:1px solid #a08750;padding-bottom: 10px;">Your order has been successfully processed and paid. Here are the details of your order:</p>
+				<ul style="list-style-type: none; padding: 0; border-bottom: 1px solid #a08750;padding-bottom: 10px;">
+					<li><strong>Country:</strong> ${decryptedOrderDetails.country}</li>
+					<li><strong>State:</strong> ${decryptedOrderDetails.state}</li>
+					<li><strong>City:</strong> ${decryptedOrderDetails.city}</li>
+					<li><strong>Postal Code:</strong> ${decryptedOrderDetails.postCode}</li>
+					<li><strong>Street:</strong> ${decryptedOrderDetails.street}</li>
+					<li><strong>House:</strong> ${decryptedOrderDetails.house}</li>
+					<li><strong>Phone:</strong> ${decryptedOrderDetails.phoneCode} ${decryptedOrderDetails.phone}</li>
+					<li><strong>Email:</strong> ${decryptedOrderDetails.email}</li>
+					<li>
+						<strong>Items:</strong> 
+						${itemHtml}
+					</li>
+					<li><strong>Total:</strong> ${orderDetails.total}$</li>
+				</ul>
+				<p>If there are any issues or if you have any questions, please contact us.</p>
+				<p>Best Regards, <strong>DeskCulture</strong>
+			</div>
+		</div>
 			`
 		}
 
@@ -299,7 +262,7 @@ export class OrderService {
 						data: {
 							status: EnumOrderStatus.PAYED,
 							paymentIntentId: paymentIntentId,
-							email: encrypt(customerEmail)
+							email: EncryptionUtility.encrypt(customerEmail)
 						}
 					})
 
