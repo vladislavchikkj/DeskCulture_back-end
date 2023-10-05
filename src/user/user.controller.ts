@@ -20,10 +20,6 @@ import { UserService } from './user.service'
 export class UserController {
 	constructor(private readonly userService: UserService) {}
 
-	// get profile
-	// update profile
-	// toggleFavorites
-
 	@Get('profile')
 	@Auth()
 	async login(@CurrentUser('id') id: number) {
@@ -48,15 +44,13 @@ export class UserController {
 		return this.userService.toggleFavorite(id, +productId)
 	}
 
-	//admin only !!!
-
 	@Get()
-	@Auth()
+	@Auth('admin')
 	async getAllUsers() {
 		return this.userService.findAllUsers()
 	}
 
-	@Auth()
+	@Auth('admin')
 	@Delete(':id')
 	async deleteUser(@Param('id') id: string) {
 		const parsedId = parseInt(id)

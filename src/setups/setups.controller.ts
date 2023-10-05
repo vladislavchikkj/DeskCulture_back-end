@@ -55,7 +55,7 @@ export class SetupsController {
 	}
 
 	@HttpCode(200)
-	@Auth()
+	@Auth('admin')
 	@Delete(':id')
 	async delete(@Param('id') id: string) {
 		return this.setupsService.delete(+id)

@@ -32,7 +32,6 @@ export class EncryptionUtility {
 			decrypted = Buffer.concat([decrypted, decipher.final()])
 			return decrypted.toString()
 		} catch (error) {
-			console.error(`Error decrypting data: ${error.message}`)
 			return text
 		}
 	}
