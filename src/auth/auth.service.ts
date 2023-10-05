@@ -11,7 +11,6 @@ import { randomBytes } from 'crypto'
 import * as nodemailer from 'nodemailer'
 import { PrismaService } from 'src/prisma.service'
 import { UserService } from 'src/user/user.service'
-import { EncryptionUtility } from 'src/utils/crypto.utility'
 import { AuthDto } from './dto/auth.dto'
 import { ChangePasswordDto } from './dto/change-password.dto'
 
@@ -35,6 +34,24 @@ export class AuthService {
 	async login(dto: AuthDto) {
 		const user = await this.validateUser(dto)
 		const tokens = await this.issueToken(user.id)
+
+		const encryptedEmail = dto.email
+		const orders = await this.prisma.order.findMany({
+			where: {
+				email: encryptedEmail,
+				user: null
+			}
+		})
+		for (let order of orders) {
+			await this.prisma.order.update({
+				where: { id: order.id },
+				data: {
+					user: {
+						connect: { id: user.id }
+					}
+				}
+			})
+		}
 
 		return {
 			user: this.returnUserField(user),
@@ -81,15 +98,13 @@ export class AuthService {
 			}
 		})
 
-		// Находим все заказы по этому email и привязываем к пользователю
-		const encryptedEmail = EncryptionUtility.encrypt(dto.email)
+		const encryptedEmail = dto.email
 		const orders = await this.prisma.order.findMany({
 			where: {
 				email: encryptedEmail,
 				user: null
 			}
 		})
-
 		for (let order of orders) {
 			await this.prisma.order.update({
 				where: { id: order.id },

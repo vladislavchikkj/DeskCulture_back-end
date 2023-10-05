@@ -128,7 +128,7 @@ export class OrderService {
 			house: EncryptionUtility.encrypt(dto.house),
 			phoneCode: EncryptionUtility.encrypt(dto.phoneCode),
 			phone: EncryptionUtility.encrypt(dto.phone),
-			email: EncryptionUtility.encrypt(dto.email)
+			email: dto.email
 		}
 
 		if (userId) {
@@ -198,7 +198,7 @@ export class OrderService {
 			house: EncryptionUtility.decrypt(orderDetails.house),
 			phoneCode: EncryptionUtility.decrypt(orderDetails.phoneCode),
 			phone: EncryptionUtility.decrypt(orderDetails.phone),
-			email: EncryptionUtility.decrypt(orderDetails.email)
+			email: orderDetails.email
 		}
 
 		// Generating list of items
