@@ -11,6 +11,8 @@ export const productReturnObject: Prisma.ProductSelect = {
 	createdAt: true,
 	setups: true,
 	slug: true,
+	info: true,
+	remains: true,
 	category: {
 		select: returnCategoryObject
 	},

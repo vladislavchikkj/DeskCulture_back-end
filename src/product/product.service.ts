@@ -227,11 +227,13 @@ export class ProductService {
 	}
 
 	async create(dto: ProductDto, files: Express.Multer.File[]) {
-		const { description, price, name, categoryId, setupsId } = dto
+		const { description, price, name, categoryId, setupsId, info, remains } =
+			dto
 		const serverAddress = 'http://localhost:4200/'
 		const parsedCategoryId = Number(categoryId)
 		const parsedSetupsId = Number(setupsId)
 		const parsedPrice = Number(price)
+		const parsedRemains = Number(remains)
 
 		const images: string[] = files.map(file => serverAddress + file.path)
 
@@ -245,18 +247,22 @@ export class ProductService {
 				slug: generateSlug(name),
 				images,
 				categoryId: parsedCategoryId,
-				setupsId: parsedSetupsId
+				setupsId: parsedSetupsId,
+				info,
+				remains: parsedRemains
 			}
 		})
 	}
 
 	async update(id: number, dto: ProductDto, files: Express.Multer.File[]) {
-		const { description, price, name, categoryId, setupsId } = dto
+		const { description, price, name, categoryId, setupsId, info, remains } =
+			dto
 		const serverAddress = 'http://localhost:4200/'
 		const parsedCategoryId = Number(categoryId)
 		const parsedSetupsId = Number(setupsId)
 		const parsedPrice = Number(price)
 		const parsedId = Number(id)
+		const parsedRemains = Number(remains)
 
 		const images: string[] = files.map(file => serverAddress + file.path)
 
@@ -270,6 +276,8 @@ export class ProductService {
 				name,
 				slug: generateSlug(name),
 				images,
+				info,
+				remains: parsedRemains,
 				category: {
 					connect: {
 						id: parsedCategoryId

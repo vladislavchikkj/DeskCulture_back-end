@@ -12,6 +12,14 @@ export class ProductDto implements Prisma.ProductUpdateInput {
 	@IsString()
 	description: string
 
+	@IsOptional()
+	@IsString()
+	info: string
+
+	@IsOptional()
+	@IsNumber()
+	remains: number
+
 	@IsString({
 		each: true
 	})

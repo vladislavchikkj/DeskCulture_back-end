@@ -11,6 +11,8 @@ require('dotenv').config()
 
 const stripe = require('stripe')(process.env['SECRET_KEY'])
 
+const salesTax = 10 // sales tax per send
+
 @Injectable()
 export class OrderService {
 	private transporter
@@ -51,7 +53,7 @@ export class OrderService {
 			order.house = EncryptionUtility.decrypt(order.house)
 			order.phoneCode = EncryptionUtility.decrypt(order.phoneCode)
 			order.phone = EncryptionUtility.decrypt(order.phone)
-			order.email = EncryptionUtility.decrypt(order.email)
+			order.email = order.email
 		})
 		return orders
 	}
@@ -83,7 +85,7 @@ export class OrderService {
 			order.house = EncryptionUtility.decrypt(order.house)
 			order.phoneCode = EncryptionUtility.decrypt(order.phoneCode)
 			order.phone = EncryptionUtility.decrypt(order.phone)
-			order.email = EncryptionUtility.decrypt(order.email)
+			order.email = order.email
 		})
 		return orders
 	}
@@ -112,7 +114,7 @@ export class OrderService {
 
 		const orderData = {
 			status: dto.status,
-			total: total,
+			total: total + salesTax,
 			paymentIntentId: '',
 			paymentUrl: '',
 			items: {
@@ -162,7 +164,7 @@ export class OrderService {
 						name: `${product.name}`,
 						images: product.images ? [product.images[0]] : []
 					},
-					unit_amount: Math.round(item.price * 100)
+					unit_amount: Math.round((item.price + salesTax) * 100)
 				},
 				quantity: item.quantity
 			}
@@ -262,7 +264,7 @@ export class OrderService {
 						data: {
 							status: EnumOrderStatus.PAYED,
 							paymentIntentId: paymentIntentId,
-							email: EncryptionUtility.encrypt(customerEmail)
+							email: customerEmail
 						}
 					})
 
