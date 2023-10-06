@@ -66,7 +66,6 @@ export class ProductController {
 		@UploadedFiles() files,
 		@Body() dto: Omit<ProductDto, 'images'>
 	) {
-		console.log(dto)
 		if (!files || files.length === 0) {
 			throw new BadRequestException('At least one image must be uploaded.')
 		}
