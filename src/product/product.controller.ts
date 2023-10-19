@@ -18,6 +18,7 @@ import {
 import { FilesInterceptor } from '@nestjs/platform-express'
 import { Auth } from 'src/auth/decorator/auth.decorator'
 import { multerConfig } from 'src/multer-config'
+import { ColorVariantDto } from './dto/color-variant.dto'
 import { GetAllProductDto } from './dto/get-all.product.dto'
 import { ProductDto } from './dto/product.dto'
 import { ProductService } from './product.service'
@@ -92,5 +93,54 @@ export class ProductController {
 	@Auth('admin')
 	async deleteProduct(@Param('id', ParseIntPipe) id: number) {
 		return this.productService.delete(id)
+	}
+
+	//variants
+
+	@UsePipes(new ValidationPipe())
+	@HttpCode(200)
+	@Auth('admin')
+	@Post(':productId/color-variants')
+	@UseInterceptors(FilesInterceptor('colorVariantImage', 10, multerConfig))
+	async createColorVariant(
+		@Param('productId', ParseIntPipe) productId: number,
+		@Body() dto: ColorVariantDto,
+		@UploadedFiles() files
+	) {
+		if (!files || files.length === 0) {
+			throw new BadRequestException('At least one image must be uploaded.')
+		}
+		return this.productService.createColorVariant(productId, dto, files)
+	}
+
+	@UsePipes(new ValidationPipe())
+	@Put(':productId/color-variants/:colorVariantId')
+	@Auth('admin')
+	@UseInterceptors(FilesInterceptor('colorVariantImage', 10, multerConfig))
+	async updateColorVariant(
+		@Param('productId', ParseIntPipe) productId: number,
+		@Param('colorVariantId', ParseIntPipe) colorVariantId: number,
+		@Body() dto: ColorVariantDto,
+		@UploadedFiles() files
+	) {
+		if (!files || files.length === 0) {
+			throw new BadRequestException('At least one image must be uploaded.')
+		}
+		return this.productService.updateColorVariant(
+			productId,
+			colorVariantId,
+			dto,
+			files
+		)
+	}
+
+	@HttpCode(200)
+	@Delete(':productId/color-variants/:colorVariantId')
+	@Auth('admin')
+	async deleteColorVariant(
+		@Param('productId', ParseIntPipe) productId: number,
+		@Param('colorVariantId', ParseIntPipe) colorVariantId: number
+	) {
+		return this.productService.deleteColorVariant(productId, colorVariantId)
 	}
 }

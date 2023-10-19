@@ -10,6 +10,7 @@ import {
 } from 'src/product/return-product.object'
 import { convertToNumber } from 'src/utils/convert-to-number'
 import { generateSlug } from 'src/utils/generate-slug'
+import { ColorVariantDto } from './dto/color-variant.dto'
 import { EnumProductSort, GetAllProductDto } from './dto/get-all.product.dto'
 
 @Injectable()
@@ -304,6 +305,56 @@ export class ProductService {
 		// Затем удаляем сам продукт
 		return this.prisma.product.delete({
 			where: { id }
+		})
+	}
+
+	// variants
+
+	async createColorVariant(
+		productId: number,
+		dto: ColorVariantDto,
+		files: Express.Multer.File[]
+	) {
+		const { color } = dto
+		const serverAddress = 'http://localhost:4200/'
+		const images: string[] = files.map(file => serverAddress + file.path)
+
+		return this.prisma.colorVariant.create({
+			data: {
+				color,
+				images,
+				product: {
+					connect: { id: productId }
+				}
+			}
+		})
+	}
+
+	async updateColorVariant(
+		productId: number,
+		colorVariantId: number,
+		dto: ColorVariantDto,
+		files: Express.Multer.File[]
+	) {
+		const { color } = dto
+		const serverAddress = 'http://localhost:4200/'
+		const images: string[] = files.map(file => serverAddress + file.path)
+
+		return this.prisma.colorVariant.update({
+			where: { id: colorVariantId },
+			data: {
+				color,
+				images,
+				product: {
+					connect: { id: productId }
+				}
+			}
+		})
+	}
+
+	async deleteColorVariant(productId: number, colorVariantId: number) {
+		return this.prisma.colorVariant.delete({
+			where: { id: colorVariantId }
 		})
 	}
 }
