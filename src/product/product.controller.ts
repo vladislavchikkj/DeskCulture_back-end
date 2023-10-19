@@ -58,6 +58,8 @@ export class ProductController {
 		return this.productService.bySetupsId(id)
 	}
 
+	// Create product
+
 	@UsePipes(new ValidationPipe())
 	@HttpCode(200)
 	@Auth('admin')
@@ -72,6 +74,8 @@ export class ProductController {
 		}
 		return this.productService.create(dto, files)
 	}
+
+	// Update product
 
 	@UsePipes(new ValidationPipe())
 	@Put(':id')
@@ -88,6 +92,8 @@ export class ProductController {
 		return this.productService.update(id, dto, files)
 	}
 
+	// Delete product
+
 	@HttpCode(200)
 	@Delete(':id')
 	@Auth('admin')
@@ -95,7 +101,9 @@ export class ProductController {
 		return this.productService.delete(id)
 	}
 
-	//variants
+	// Color variants
+
+	// Create color variants
 
 	@UsePipes(new ValidationPipe())
 	@HttpCode(200)
@@ -112,6 +120,8 @@ export class ProductController {
 		}
 		return this.productService.createColorVariant(productId, dto, files)
 	}
+
+	// Update color variants
 
 	@UsePipes(new ValidationPipe())
 	@Put(':productId/color-variants/:colorVariantId')
@@ -133,6 +143,44 @@ export class ProductController {
 			files
 		)
 	}
+
+	// Update color variants name
+
+	@Put(':productId/color-variants/:colorVariantId/name')
+	@Auth('admin')
+	async updateColorVariantName(
+		@Param('productId', ParseIntPipe) productId: number,
+		@Param('colorVariantId', ParseIntPipe) colorVariantId: number,
+		@Body() dto: Pick<ColorVariantDto, 'color'>
+	) {
+		return this.productService.updateColorVariantName(
+			productId,
+			colorVariantId,
+			dto
+		)
+	}
+
+	// Update color variants images
+
+	@Put(':productId/color-variants/:colorVariantId/images')
+	@Auth('admin')
+	@UseInterceptors(FilesInterceptor('colorVariantImage', 10, multerConfig))
+	async updateColorVariantImages(
+		@Param('productId', ParseIntPipe) productId: number,
+		@Param('colorVariantId', ParseIntPipe) colorVariantId: number,
+		@UploadedFiles() files
+	) {
+		if (!files || files.length === 0) {
+			throw new BadRequestException('At least one image must be uploaded.')
+		}
+		return this.productService.updateColorVariantImages(
+			productId,
+			colorVariantId,
+			files
+		)
+	}
+
+	// Delete color variants images
 
 	@HttpCode(200)
 	@Delete(':productId/color-variants/:colorVariantId')

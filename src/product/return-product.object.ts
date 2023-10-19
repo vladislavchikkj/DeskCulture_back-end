@@ -21,7 +21,8 @@ export const productReturnObject: Prisma.ProductSelect = {
 		orderBy: {
 			createdAt: 'desc'
 		}
-	}
+	},
+	ColorVariant: true
 }
 
 export const productReturnObjectFullest: Prisma.ProductSelect = {

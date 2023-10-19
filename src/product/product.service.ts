@@ -352,6 +352,41 @@ export class ProductService {
 		})
 	}
 
+	async updateColorVariantName(
+		productId: number,
+		colorVariantId: number,
+		dto: Partial<ColorVariantDto>
+	) {
+		return this.prisma.colorVariant.update({
+			where: { id: colorVariantId },
+			data: {
+				color: dto.color,
+				product: {
+					connect: { id: productId }
+				}
+			}
+		})
+	}
+
+	async updateColorVariantImages(
+		productId: number,
+		colorVariantId: number,
+		files: Express.Multer.File[]
+	) {
+		const serverAddress = 'http://localhost:4200/'
+		const images: string[] = files.map(file => serverAddress + file.path)
+
+		return this.prisma.colorVariant.update({
+			where: { id: colorVariantId },
+			data: {
+				images,
+				product: {
+					connect: { id: productId }
+				}
+			}
+		})
+	}
+
 	async deleteColorVariant(productId: number, colorVariantId: number) {
 		return this.prisma.colorVariant.delete({
 			where: { id: colorVariantId }
