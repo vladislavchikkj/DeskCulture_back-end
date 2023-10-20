@@ -14,7 +14,7 @@ export const multerConfig = {
 		}
 	}),
 	fileFilter: (req, file, cb) => {
-		if (!['image/jpeg', 'image/png'].includes(file.mimetype)) {
+		if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.mimetype)) {
 			cb(new Error('Invalid file type'), false)
 		} else {
 			cb(null, true)

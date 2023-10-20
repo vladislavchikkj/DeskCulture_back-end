@@ -63,6 +63,7 @@ export class OrderItemDto {
 	@IsNumber()
 	productId: number
 
+	@IsOptional()
 	@IsNumber()
 	colorVariantId: number
 }

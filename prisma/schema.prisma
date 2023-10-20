@@ -131,17 +131,18 @@ model Order {
     paymentIntentId String
     paymentUrl      String?
 
-    firstName String
-    lastName  String
-    country   String
-    state     String
-    city      String
-    postCode  String
-    street    String
-    house     String
-    phoneCode String
-    phone     String
-    email     String
+    firstName    String
+    lastName     String
+    country      String
+    state        String
+    city         String
+    postCode     String
+    street       String
+    house        String
+    phoneCode    String
+    phone        String
+    email        String
+    colorVariant String?
 }
 
 enum EnumOrderStatus {
