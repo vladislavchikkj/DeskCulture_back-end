@@ -131,18 +131,17 @@ model Order {
     paymentIntentId String
     paymentUrl      String?
 
-    firstName    String
-    lastName     String
-    country      String
-    state        String
-    city         String
-    postCode     String
-    street       String
-    house        String
-    phoneCode    String
-    phone        String
-    email        String
-    colorVariant String?
+    firstName String
+    lastName  String
+    country   String
+    state     String
+    city      String
+    postCode  String
+    street    String
+    house     String
+    phoneCode String
+    phone     String
+    email     String
 }
 
 enum EnumOrderStatus {
@@ -163,10 +162,11 @@ model OrderItem {
     order   Order? @relation(fields: [orderId], references: [id])
     orderId Int?   @map("order_id")
 
-    product        Product?      @relation(fields: [productId], references: [id])
-    productId      Int           @map("product_id")
-    colorVariant   ColorVariant? @relation(fields: [colorVariantId], references: [id])
-    colorVariantId Int?
+    product          Product?      @relation(fields: [productId], references: [id])
+    productId        Int           @map("product_id")
+    colorVariant     ColorVariant? @relation(fields: [colorVariantId], references: [id])
+    colorVariantId   Int?
+    colorVariantName String?
 
     @@map("Order_item")
 }

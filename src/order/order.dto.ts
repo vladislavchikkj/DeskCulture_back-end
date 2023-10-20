@@ -66,4 +66,8 @@ export class OrderItemDto {
 	@IsOptional()
 	@IsNumber()
 	colorVariantId: number
+
+	@IsOptional()
+	@IsString()
+	colorVariantName: string
 }
