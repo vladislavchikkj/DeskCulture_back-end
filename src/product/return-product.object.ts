@@ -22,7 +22,13 @@ export const productReturnObject: Prisma.ProductSelect = {
 			createdAt: 'desc'
 		}
 	},
-	ColorVariant: true
+	productType: {
+		select: {
+			color: true,
+			type: true,
+			images: true
+		}
+	}
 }
 
 export const productReturnObjectFullest: Prisma.ProductSelect = {

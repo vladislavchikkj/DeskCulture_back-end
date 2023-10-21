@@ -10,8 +10,8 @@ import {
 } from 'src/product/return-product.object'
 import { convertToNumber } from 'src/utils/convert-to-number'
 import { generateSlug } from 'src/utils/generate-slug'
-import { ColorVariantDto } from './dto/color-variant.dto'
 import { EnumProductSort, GetAllProductDto } from './dto/get-all.product.dto'
+import { ProductTypeDto } from './dto/product-types.dto'
 
 @Injectable()
 export class ProductService {
@@ -310,18 +310,20 @@ export class ProductService {
 
 	// variants
 
-	async createColorVariant(
+	async createProductType(
 		productId: number,
-		dto: ColorVariantDto,
+		dto: ProductTypeDto,
 		files: Express.Multer.File[]
 	) {
 		const { color } = dto
+		const { type } = dto
 		const serverAddress = 'http://localhost:4200/'
 		const images: string[] = files.map(file => serverAddress + file.path)
 
-		return this.prisma.colorVariant.create({
+		return this.prisma.productType.create({
 			data: {
 				color,
+				type,
 				images,
 				product: {
 					connect: { id: productId }
@@ -330,20 +332,22 @@ export class ProductService {
 		})
 	}
 
-	async updateColorVariant(
+	async updateProductType(
 		productId: number,
-		colorVariantId: number,
-		dto: ColorVariantDto,
+		productTypeId: number,
+		dto: ProductTypeDto,
 		files: Express.Multer.File[]
 	) {
 		const { color } = dto
+		const { type } = dto
 		const serverAddress = 'http://localhost:4200/'
 		const images: string[] = files.map(file => serverAddress + file.path)
 
-		return this.prisma.colorVariant.update({
-			where: { id: colorVariantId },
+		return this.prisma.productTypes.update({
+			where: { id: productTypeId },
 			data: {
 				color,
+				type,
 				images,
 				product: {
 					connect: { id: productId }
@@ -352,13 +356,13 @@ export class ProductService {
 		})
 	}
 
-	async updateColorVariantName(
+	async updateProductTypeName(
 		productId: number,
-		colorVariantId: number,
-		dto: Partial<ColorVariantDto>
+		productTypeId: number,
+		dto: Partial<ProductTypeDto>
 	) {
-		return this.prisma.colorVariant.update({
-			where: { id: colorVariantId },
+		return this.prisma.productType.update({
+			where: { id: productTypeId },
 			data: {
 				color: dto.color,
 				product: {
@@ -368,16 +372,16 @@ export class ProductService {
 		})
 	}
 
-	async updateColorVariantImages(
+	async updateProductTypeImages(
 		productId: number,
-		colorVariantId: number,
+		productTypeId: number,
 		files: Express.Multer.File[]
 	) {
 		const serverAddress = 'http://localhost:4200/'
 		const images: string[] = files.map(file => serverAddress + file.path)
 
-		return this.prisma.colorVariant.update({
-			where: { id: colorVariantId },
+		return this.prisma.productType.update({
+			where: { id: productTypeId },
 			data: {
 				images,
 				product: {
@@ -387,9 +391,9 @@ export class ProductService {
 		})
 	}
 
-	async deleteColorVariant(productId: number, colorVariantId: number) {
-		return this.prisma.colorVariant.delete({
-			where: { id: colorVariantId }
+	async deleteProductType(productId: number, productTypeId: number) {
+		return this.prisma.productType.delete({
+			where: { id: productTypeId }
 		})
 	}
 }

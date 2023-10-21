@@ -18,8 +18,8 @@ import {
 import { FilesInterceptor } from '@nestjs/platform-express'
 import { Auth } from 'src/auth/decorator/auth.decorator'
 import { multerConfig } from 'src/multer-config'
-import { ColorVariantDto } from './dto/color-variant.dto'
 import { GetAllProductDto } from './dto/get-all.product.dto'
+import { ProductTypeDto } from './dto/product-types.dto'
 import { ProductDto } from './dto/product.dto'
 import { ProductService } from './product.service'
 
@@ -101,44 +101,44 @@ export class ProductController {
 		return this.productService.delete(id)
 	}
 
-	// Color variants
+	// productType
 
-	// Create color variants
+	// Create productType
 
 	@UsePipes(new ValidationPipe())
 	@HttpCode(200)
 	@Auth('admin')
-	@Post(':productId/color-variants')
-	@UseInterceptors(FilesInterceptor('colorVariantImage', 10, multerConfig))
-	async createColorVariant(
+	@Post(':productId/product-type')
+	@UseInterceptors(FilesInterceptor('productTypeImage', 10, multerConfig))
+	async createProductType(
 		@Param('productId', ParseIntPipe) productId: number,
-		@Body() dto: ColorVariantDto,
+		@Body() dto: ProductTypeDto,
 		@UploadedFiles() files
 	) {
 		if (!files || files.length === 0) {
 			throw new BadRequestException('At least one image must be uploaded.')
 		}
-		return this.productService.createColorVariant(productId, dto, files)
+		return this.productService.createProductType(productId, dto, files)
 	}
 
 	// Update color variants
 
 	@UsePipes(new ValidationPipe())
-	@Put(':productId/color-variants/:colorVariantId')
+	@Put(':productId/product-type/:productTypeId')
 	@Auth('admin')
-	@UseInterceptors(FilesInterceptor('colorVariantImage', 10, multerConfig))
+	@UseInterceptors(FilesInterceptor('productTypeImage', 10, multerConfig))
 	async updateColorVariant(
 		@Param('productId', ParseIntPipe) productId: number,
-		@Param('colorVariantId', ParseIntPipe) colorVariantId: number,
-		@Body() dto: ColorVariantDto,
+		@Param('productTypeId', ParseIntPipe) productTypeId: number,
+		@Body() dto: ProductTypeDto,
 		@UploadedFiles() files
 	) {
 		if (!files || files.length === 0) {
 			throw new BadRequestException('At least one image must be uploaded.')
 		}
-		return this.productService.updateColorVariant(
+		return this.productService.updateProductType(
 			productId,
-			colorVariantId,
+			productTypeId,
 			dto,
 			files
 		)
@@ -146,36 +146,36 @@ export class ProductController {
 
 	// Update color variants name
 
-	@Put(':productId/color-variants/:colorVariantId/name')
+	@Put(':productId/productType/:productTypeId/name')
 	@Auth('admin')
 	async updateColorVariantName(
 		@Param('productId', ParseIntPipe) productId: number,
-		@Param('colorVariantId', ParseIntPipe) colorVariantId: number,
-		@Body() dto: Pick<ColorVariantDto, 'color'>
+		@Param('productTypeId', ParseIntPipe) productTypeId: number,
+		@Body() dto: Pick<ProductTypeDto, 'color'>
 	) {
-		return this.productService.updateColorVariantName(
+		return this.productService.updateProductTypeName(
 			productId,
-			colorVariantId,
+			productTypeId,
 			dto
 		)
 	}
 
 	// Update color variants images
 
-	@Put(':productId/color-variants/:colorVariantId/images')
+	@Put(':productId/productType/:productTypeId/images')
 	@Auth('admin')
-	@UseInterceptors(FilesInterceptor('colorVariantImage', 10, multerConfig))
-	async updateColorVariantImages(
+	@UseInterceptors(FilesInterceptor('productTypeImage', 10, multerConfig))
+	async updateProductTypeImages(
 		@Param('productId', ParseIntPipe) productId: number,
-		@Param('colorVariantId', ParseIntPipe) colorVariantId: number,
+		@Param('productTypeId', ParseIntPipe) productTypeId: number,
 		@UploadedFiles() files
 	) {
 		if (!files || files.length === 0) {
 			throw new BadRequestException('At least one image must be uploaded.')
 		}
-		return this.productService.updateColorVariantImages(
+		return this.productService.updateProductTypeImages(
 			productId,
-			colorVariantId,
+			productTypeId,
 			files
 		)
 	}
@@ -183,12 +183,12 @@ export class ProductController {
 	// Delete color variants images
 
 	@HttpCode(200)
-	@Delete(':productId/color-variants/:colorVariantId')
+	@Delete(':productId/productType/:productTypeId')
 	@Auth('admin')
 	async deleteColorVariant(
 		@Param('productId', ParseIntPipe) productId: number,
-		@Param('colorVariantId', ParseIntPipe) colorVariantId: number
+		@Param('productTypeId', ParseIntPipe) productTypeId: number
 	) {
-		return this.productService.deleteColorVariant(productId, colorVariantId)
+		return this.productService.deleteProductType(productId, productTypeId)
 	}
 }

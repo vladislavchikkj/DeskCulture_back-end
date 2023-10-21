@@ -64,10 +64,10 @@ export class OrderItemDto {
 	productId: number
 
 	@IsOptional()
-	@IsNumber()
-	colorVariantId: number
+	@IsString()
+	type: string
 
 	@IsOptional()
 	@IsString()
-	colorVariantName: string
+	color: string
 }
