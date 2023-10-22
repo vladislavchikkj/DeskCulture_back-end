@@ -230,7 +230,7 @@ export class ProductService {
 	async create(dto: ProductDto, files: Express.Multer.File[]) {
 		const { description, price, name, categoryId, setupsId, info, remains } =
 			dto
-		const serverAddress = 'http://localhost:4200/'
+		const serverAddress = process.env.SERVER_URL
 		const parsedCategoryId = Number(categoryId)
 		const parsedSetupsId = Number(setupsId)
 		const parsedPrice = Number(price)
@@ -258,7 +258,7 @@ export class ProductService {
 	async update(id: number, dto: ProductDto, files: Express.Multer.File[]) {
 		const { description, price, name, categoryId, setupsId, info, remains } =
 			dto
-		const serverAddress = 'http://localhost:4200/'
+		const serverAddress = process.env.SERVER_URL
 		const parsedCategoryId = Number(categoryId)
 		const parsedSetupsId = Number(setupsId)
 		const parsedPrice = Number(price)
@@ -317,7 +317,7 @@ export class ProductService {
 	) {
 		const { color } = dto
 		const { type } = dto
-		const serverAddress = 'http://localhost:4200/'
+		const serverAddress = process.env.SERVER_URL
 		const images: string[] = files.map(file => serverAddress + file.path)
 
 		return this.prisma.productType.create({
@@ -340,7 +340,7 @@ export class ProductService {
 	) {
 		const { color } = dto
 		const { type } = dto
-		const serverAddress = 'http://localhost:4200/'
+		const serverAddress = process.env.SERVER_URL
 		const images: string[] = files.map(file => serverAddress + file.path)
 
 		return this.prisma.productTypes.update({
@@ -377,7 +377,7 @@ export class ProductService {
 		productTypeId: number,
 		files: Express.Multer.File[]
 	) {
-		const serverAddress = 'http://localhost:4200/'
+		const serverAddress = process.env.SERVER_URL
 		const images: string[] = files.map(file => serverAddress + file.path)
 
 		return this.prisma.productType.update({
