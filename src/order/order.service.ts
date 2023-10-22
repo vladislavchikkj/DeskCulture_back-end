@@ -174,9 +174,8 @@ export class OrderService {
 			line_items: line_items,
 			mode: 'payment',
 			customer_email: dto.email,
-			success_url: 'http://localhost:3000/thanks',
-			// 'https://example.com/success?session_id={CHECKOUT_SESSION_ID}',
-			cancel_url: 'http://localhost:3000/wrong',
+			success_url: process.env.CLIENT_SUCCESS_URL,
+			cancel_url: process.env.CLIENT_CANCEL_URL,
 			metadata: {
 				orderId: order.id.toString()
 			}
