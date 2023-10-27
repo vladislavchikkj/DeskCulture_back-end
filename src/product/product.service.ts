@@ -227,7 +227,11 @@ export class ProductService {
 		return products
 	}
 
-	async create(dto: ProductDto, files: Express.Multer.File[]) {
+	async create(
+		dto: ProductDto,
+		filesImages: Express.Multer.File[],
+		filesImagesInfo: Express.Multer.File[]
+	) {
 		const { description, price, name, categoryId, setupsId, info, remains } =
 			dto
 		const serverAddress = process.env.SERVER_URL
@@ -236,7 +240,10 @@ export class ProductService {
 		const parsedPrice = Number(price)
 		const parsedRemains = Number(remains)
 
-		const images: string[] = files.map(file => serverAddress + file.path)
+		const images: string[] = filesImages.map(file => serverAddress + file.path)
+		const imagesInfo: string[] = filesImagesInfo.map(
+			file => serverAddress + file.path
+		)
 
 		await this.categoryService.byId(parsedCategoryId)
 
@@ -247,6 +254,7 @@ export class ProductService {
 				price: parsedPrice,
 				slug: generateSlug(name),
 				images,
+				imagesInfo,
 				categoryId: parsedCategoryId,
 				setupsId: parsedSetupsId,
 				info,
@@ -255,7 +263,12 @@ export class ProductService {
 		})
 	}
 
-	async update(id: number, dto: ProductDto, files: Express.Multer.File[]) {
+	async update(
+		id: number,
+		dto: ProductDto,
+		filesImages: Express.Multer.File[],
+		filesImagesInfo: Express.Multer.File[]
+	) {
 		const { description, price, name, categoryId, setupsId, info, remains } =
 			dto
 		const serverAddress = process.env.SERVER_URL
@@ -265,7 +278,10 @@ export class ProductService {
 		const parsedId = Number(id)
 		const parsedRemains = Number(remains)
 
-		const images: string[] = files.map(file => serverAddress + file.path)
+		const images: string[] = filesImages.map(file => serverAddress + file.path)
+		const imagesInfo: string[] = filesImagesInfo.map(
+			file => serverAddress + file.path
+		)
 
 		await this.categoryService.byId(parsedCategoryId)
 
@@ -277,6 +293,7 @@ export class ProductService {
 				name,
 				slug: generateSlug(name),
 				images,
+				imagesInfo,
 				info,
 				remains: parsedRemains,
 				category: {
