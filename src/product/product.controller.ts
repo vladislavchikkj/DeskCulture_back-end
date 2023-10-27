@@ -15,9 +15,12 @@ import {
 	UsePipes,
 	ValidationPipe
 } from '@nestjs/common'
-import { FilesInterceptor } from '@nestjs/platform-express'
+import {
+	FileFieldsInterceptor,
+	FilesInterceptor
+} from '@nestjs/platform-express'
 import { Auth } from 'src/auth/decorator/auth.decorator'
-import { multerConfig } from 'src/multer-config'
+import { multerConfig, multerConfigImagesInfo } from 'src/multer-config'
 import { GetAllProductDto } from './dto/get-all.product.dto'
 import { ProductTypeDto } from './dto/product-types.dto'
 import { ProductDto } from './dto/product.dto'
@@ -64,32 +67,51 @@ export class ProductController {
 	@HttpCode(200)
 	@Auth('admin')
 	@Post()
-	@UseInterceptors(FilesInterceptor('image', 10, multerConfig))
+	@UseInterceptors(
+		FileFieldsInterceptor(
+			[
+				{ name: 'images', maxCount: 10 },
+				{ name: 'imagesInfo', maxCount: 10 }
+			],
+			multerConfig
+		)
+	)
 	async createProduct(
 		@UploadedFiles() files,
-		@Body() dto: Omit<ProductDto, 'images'>
+		@Body() dto: Omit<ProductDto, 'images' | 'imagesInfo'>
 	) {
-		if (!files || files.length === 0) {
-			throw new BadRequestException('At least one image must be uploaded.')
+		if (
+			!files ||
+			!files.images ||
+			files.images.length === 0 ||
+			!files.imagesInfo ||
+			files.imagesInfo.length === 0
+		) {
+			throw new BadRequestException(
+				'At least one image and one info image must be uploaded.'
+			)
 		}
-		return this.productService.create(dto, files)
+		return this.productService.create(dto, files.images, files.imagesInfo)
 	}
 
 	// Update product
 
-	@UsePipes(new ValidationPipe())
 	@Put(':id')
-	@Auth('admin')
-	@UseInterceptors(FilesInterceptor('image', 10, multerConfig))
+	@UseInterceptors(
+		FilesInterceptor('images', 10, multerConfig),
+		FilesInterceptor('imagesInfo', 10, multerConfigImagesInfo)
+	)
 	async updateProduct(
 		@Param('id', ParseIntPipe) id: number,
-		@Body() dto: Omit<ProductDto, 'images'>,
+		@Body() dto: Omit<ProductDto, 'images' | 'imagesInfo'>,
 		@UploadedFiles() files
 	) {
-		if (!files || files.length === 0) {
-			throw new BadRequestException('At least one image must be uploaded.')
+		if (!files || files.images.length === 0 || files.imagesInfo.length === 0) {
+			throw new BadRequestException(
+				'At least one image and one info image must be uploaded.'
+			)
 		}
-		return this.productService.update(id, dto, files)
+		return this.productService.update(id, dto, files.images, files.imagesInfo)
 	}
 
 	// Delete product

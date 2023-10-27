@@ -38,6 +38,7 @@ model Product {
     remains         Int?
     price           Int
     images          String[]
+    imagesInfo      String[]
     orderItems      OrderItem[]
     reviews         Review[]
     category        Category?         @relation(fields: [categoryId], references: [id])
