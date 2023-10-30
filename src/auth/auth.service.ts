@@ -216,19 +216,22 @@ export class AuthService {
 			from: process.env.EMAIL_USERNAME,
 			to: user.email,
 			subject: 'Password Reset',
-			text: `Вы получили это письмо, потому что вы (или кто-то еще) запросили сброс пароля для вашего аккаунта.\n\n
-					Пожалуйста, перейдите по следующему URL или скопируйте его в адресную строку вашего браузера, чтобы завершить процесс:\n\n
+			text: `
+			You received this email because you (or someone else) requested a reset of your account.\n\n
+					
+Please visit the following URL or copy it into your browser's address bar to complete the process:\n\n
 					http://localhost:3000/auth/reset/${encodeURIComponent(
 						user.email + DELIMITER + token
 					)}\n\n
-					Если вы не запрашивали сброс пароля, просто проигнорируйте это письмо и ваш пароль останется прежним.\n`
+					
+If you did not request a password reset, simply ignore this email and your password will remain the same.\n`
 		}
 
 		this.transporter.sendMail(mailOptions, function (error, info) {
 			if (error) {
 				console.log(error)
 			} else {
-				console.log('Письмо отправлено: ' + info.response)
+				console.log('Letter sent: ' + info.response)
 			}
 		})
 	}
