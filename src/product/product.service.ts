@@ -240,9 +240,11 @@ export class ProductService {
 		const parsedPrice = Number(price)
 		const parsedRemains = Number(remains)
 
-		const images: string[] = filesImages.map(file => serverAddress + file.path)
+		const images: string[] = filesImages.map(
+			file => serverAddress + `/${file.path}`
+		)
 		const imagesInfo: string[] = filesImagesInfo.map(
-			file => serverAddress + file.path
+			file => serverAddress + `/${file.path}`
 		)
 
 		await this.categoryService.byId(parsedCategoryId)
@@ -278,9 +280,11 @@ export class ProductService {
 		const parsedId = Number(id)
 		const parsedRemains = Number(remains)
 
-		const images: string[] = filesImages.map(file => serverAddress + file.path)
+		const images: string[] = filesImages.map(
+			file => serverAddress + `/${file.path}`
+		)
 		const imagesInfo: string[] = filesImagesInfo.map(
-			file => serverAddress + file.path
+			file => serverAddress + `/${file.path}`
 		)
 
 		await this.categoryService.byId(parsedCategoryId)
@@ -335,7 +339,7 @@ export class ProductService {
 		const { color } = dto
 		const { type } = dto
 		const serverAddress = process.env.SERVER_URL
-		const images: string[] = files.map(file => serverAddress + file.path)
+		const images: string[] = files.map(file => serverAddress + `/${file.path}`)
 
 		return this.prisma.productType.create({
 			data: {
@@ -358,7 +362,7 @@ export class ProductService {
 		const { color } = dto
 		const { type } = dto
 		const serverAddress = process.env.SERVER_URL
-		const images: string[] = files.map(file => serverAddress + file.path)
+		const images: string[] = files.map(file => serverAddress + `/${file.path}`)
 
 		return this.prisma.productTypes.update({
 			where: { id: productTypeId },
@@ -395,7 +399,7 @@ export class ProductService {
 		files: Express.Multer.File[]
 	) {
 		const serverAddress = process.env.SERVER_URL
-		const images: string[] = files.map(file => serverAddress + file.path)
+		const images: string[] = files.map(file => serverAddress + `/${file.path}`)
 
 		return this.prisma.productType.update({
 			where: { id: productTypeId },
