@@ -20,7 +20,7 @@ import {
 	FilesInterceptor
 } from '@nestjs/platform-express'
 import { Auth } from 'src/auth/decorator/auth.decorator'
-import { multerConfig, multerConfigImagesInfo } from 'src/multer-config'
+import { multerConfig } from 'src/multer-config'
 import { GetAllProductDto } from './dto/get-all.product.dto'
 import { ProductTypeDto } from './dto/product-types.dto'
 import { ProductDto } from './dto/product.dto'
@@ -98,8 +98,13 @@ export class ProductController {
 
 	@Put(':id')
 	@UseInterceptors(
-		FilesInterceptor('images', 10, multerConfig),
-		FilesInterceptor('imagesInfo', 10, multerConfigImagesInfo)
+		FileFieldsInterceptor(
+			[
+				{ name: 'images', maxCount: 10 },
+				{ name: 'imagesInfo', maxCount: 10 }
+			],
+			multerConfig
+		)
 	)
 	async updateProduct(
 		@Param('id', ParseIntPipe) id: number,
