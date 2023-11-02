@@ -22,7 +22,9 @@ export class SetupsService {
 				products: {
 					select: {
 						id: true,
-						name: true
+						name: true,
+						images: true,
+						info: true
 						// Другие поля продукта, которые вы хотите выбрать
 					}
 				}
