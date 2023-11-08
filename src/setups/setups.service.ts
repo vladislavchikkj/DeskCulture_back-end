@@ -24,7 +24,8 @@ export class SetupsService {
 						id: true,
 						name: true,
 						images: true,
-						info: true
+						info: true,
+						price: true
 						// Другие поля продукта, которые вы хотите выбрать
 					}
 				}
