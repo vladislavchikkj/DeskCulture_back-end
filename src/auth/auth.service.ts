@@ -220,9 +220,9 @@ export class AuthService {
 			You received this email because you (or someone else) requested a reset of your account.\n\n
 					
 Please visit the following URL or copy it into your browser's address bar to complete the process:\n\n
-					http://localhost:3000/auth/reset/${encodeURIComponent(
-						user.email + DELIMITER + token
-					)}\n\n
+https://desk-culture.com/auth/reset/${encodeURIComponent(
+				user.email + DELIMITER + token
+			)}\n\n
 					
 If you did not request a password reset, simply ignore this email and your password will remain the same.\n`
 		}
