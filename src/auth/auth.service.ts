@@ -23,7 +23,7 @@ export class AuthService {
 		private userService: UserService
 	) {
 		this.transporter = nodemailer.createTransport({
-			service: 'hotmail',
+			service: 'Outlook365',
 			auth: {
 				user: process.env.EMAIL_USERNAME,
 				pass: process.env.EMAIL_PASSWORD
