@@ -11,7 +11,7 @@ require('dotenv').config()
 
 const stripe = require('stripe')(process.env['SECRET_KEY'])
 
-const salesTax = 10 // sales tax per send
+const salesTax = 0 // sales tax per send
 
 @Injectable()
 export class OrderService {
